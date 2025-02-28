@@ -1,0 +1,14 @@
+{
+  "nav": {
+    "dashboards": {
+      "dashboards": "لوحات التحكم",
+      "home": "الرئيسية",
+      "calendar": "Calendar"
+    },
+    "settings": {
+      "settings": "الإعدادات",
+      "general": "عام",
+      "appearance": "المظهر"
+    }
+  }
+}
