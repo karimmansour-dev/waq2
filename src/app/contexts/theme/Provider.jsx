@@ -29,7 +29,7 @@ const _html = document?.documentElement;
 
 export function ThemeProvider({ children }) {
   const isDarkOS = useMediaQuery(COLOR_SCHEME_QUERY);
-
+ 
   const [settings, setSettings] = useLocalStorage("settings", {
     themeMode: initialState.themeMode,
     themeLayout: initialState.themeLayout,

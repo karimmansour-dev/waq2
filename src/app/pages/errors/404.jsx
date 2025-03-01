@@ -9,7 +9,7 @@ import { useThemeContext } from "app/contexts/theme/context";
 import { useHover } from "hooks";
 
 // ----------------------------------------------------------------------
-
+ 
 export default function Error404() {
   const { primaryColorScheme: primary, isDark } = useThemeContext();
   const [btnRef, btnHovered] = useHover();

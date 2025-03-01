@@ -1,4 +1,4 @@
-import create from "zustand";
+import { create } from 'zustand'
 import { events } from "./events";
 
 const useCalendarStore = create((set, get) => ({
@@ -8,7 +8,7 @@ const useCalendarStore = create((set, get) => ({
   selectedCalendars: ["consultation", "emergency", "control", "etc"],
 
   // Helper function to filter events based on selected calendars
-  filterEventsUsingCheckbox: (events, selectedCalendars) => { 
+  filterEventsUsingCheckbox: (events, selectedCalendars) => {
     return events.filter((event) =>
       selectedCalendars.includes(event.extendedProps?.calendar),
     );
@@ -68,7 +68,15 @@ const useCalendarStore = create((set, get) => ({
   updateEvent: (updatedEvent) => {
     set((state) => ({
       events: state.events.map((event) => {
+        console.log("updateEvent");
+        console.log(updatedEvent._def);
+        console.log(updatedEvent.id);
+        console.log(event.id);
+        console.log("...............:::   ", updatedEvent._def.publicId);
+
         if (updatedEvent._def && event.id === updatedEvent._def.publicId) {
+          console.log("eventeventeventeventeventeventeventevenupdatedupdatedupdatedupdatedupdated1   ");
+
           return {
             id: event.id,
             url: updatedEvent._def.url,
@@ -79,6 +87,8 @@ const useCalendarStore = create((set, get) => ({
             extendedProps: updatedEvent._def.extendedProps,
           };
         } else if (event.id === updatedEvent.id) {
+          console.log("eventeventeventeventeventeventeventevenupdatedupdatedupdatedupdatedupdated2...............:::   ");
+
           return updatedEvent;
         } else {
           return event;

@@ -1,6 +1,9 @@
+/* eslint-disable no-unused-vars */
 // Import Dependencies
 
 import { useCallback, useEffect, useState } from "react";
+import clsx from "clsx";
+
 // Local Imports
 
 import Calendar from "./calendar";
@@ -11,6 +14,8 @@ import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { Statistics } from "./Statistics";
 import { CalendarHeader } from "./calendarHeader";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
+import AppFullCalendar from "./appFullCalendar";
+import SimpleBar from "simplebar-react";
 
 const CalendarWrapper = () => {
   // const calendarsColor = {
@@ -50,15 +55,14 @@ const CalendarWrapper = () => {
   );
 
   return (
-    <FullScreen handle={handle} onChange={handleFullScreen}>
+    <FullScreen handle={handle} onChange={handleFullScreen} className="w-full">
       <div className="flex flex-col">
         <CalendarHeader
           isFullScreen={isFullScreen}
           setIsFullScreen={setIsFullScreen}
         />
 
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:gap-6 my-[200px]">
+        <div className="my-[200px] flex w-full flex-1 gap-x-10">
           <SidebarLeft
             mdAbove={mdAndUp}
             calendarApi={calendarApi}
@@ -68,16 +72,23 @@ const CalendarWrapper = () => {
             handleAddEventToggle={handleAddEventToggle}
           />
 
-          <Calendar
-            calendarApi={calendarApi}
-            setCalendarApi={setCalendarApi}
-            // calendarsColor={calendarsColor}
-            leftSidebarOpen={isExpanded}
-            handleLeftSidebarToggle={toggle}
-            handleAddEventToggle={handleAddEventToggle}
-          />
+          <AppFullCalendar className="border-2 border-primary-300 p-1">
+            <Calendar
+              calendarApi={calendarApi}
+              setCalendarApi={setCalendarApi}
+              // calendarsColor={calendarsColor}
+              leftSidebarOpen={isExpanded}
+              handleLeftSidebarToggle={toggle}
+              handleAddEventToggle={handleAddEventToggle}
+            />
+          </AppFullCalendar>
         </div>
+
         <Statistics />
+        <br />
+        <br />
+        <br />
+        <br />
 
         <AddEventSidebar
           calendarApi={calendarApi}

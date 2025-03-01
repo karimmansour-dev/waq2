@@ -2,7 +2,7 @@
 import { useLocation } from "react-router";
 import { useRef, useState } from "react";
 import {
-  useDidUpdate,
+  useDidUpdate, 
   useIsomorphicEffect,
 } from "hooks";
 import SimpleBar from "simplebar-react";

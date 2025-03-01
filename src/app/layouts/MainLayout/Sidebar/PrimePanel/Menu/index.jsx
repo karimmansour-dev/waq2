@@ -7,7 +7,7 @@ import SimpleBar from "simplebar-react";
 import { isRouteActive } from "utils/isRouteActive";
 import {
   useDataScrollOverflow,
-  useDidUpdate,
+  useDidUpdate, 
   useIsomorphicEffect,
 } from "hooks";
 import { CollapsibleItem } from "./CollapsibleItem";

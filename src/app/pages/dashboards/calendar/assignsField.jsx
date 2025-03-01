@@ -14,7 +14,7 @@ import { CheckIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 
 // Local Imports
-import { Avatar, Input, Tag } from "components/ui";
+import { Avatar, Input, InputErrorMsg, Tag } from "components/ui";
 
 const allMembers = [
   {
@@ -81,7 +81,7 @@ const allMembers = [
 
 // ----------------------------------------------------------------------
 
-export function AssignsField({ onChange, value, name }) {
+export function AssignsField({ onChange, value, name, error }) {
   const [query, setQuery] = useState("");
   const members = allMembers || [];
 
@@ -96,28 +96,27 @@ export function AssignsField({ onChange, value, name }) {
         );
 
   const removeItem = () => {
-    onChange({ text: "" });
+    onChange(null);
   };
 
   return (
-    <Combobox
-      value={value || null}
-      onChange={onChange}
-      name={name}
-      //   by={(a, b) => a?.uid === b?.uid}
-      //   //   multiple
-      //   immediate
-    >
+    <Combobox value={value || null} onChange={onChange}>
       {({ open }) => (
         <div className="relative">
-          <Label>Members:</Label>
+          <Label>{`${name[0].toUpperCase()}${name.substr(1)}`}:</Label>
 
           <div
             className={clsx(
               "relative mt-1.5 rounded-lg border transition-colors",
-              open
-                ? "border-primary-600 dark:border-primary-500"
-                : "border-gray-300 hover:border-gray-400 dark:border-dark-450 dark:hover:border-dark-400",
+              //focus-within
+              // error
+              // ? "border-error dark:border-error-lighter"
+              // : "border-gray-300 hover:border-gray-400 dark:border-dark-450 dark:hover:border-dark-400 focus-within:!border-primary-600 dark:focus-within:!border-primary-500",
+              error
+                ? "border-error dark:border-error-lighter"
+                : open
+                  ? "border-primary-600 dark:border-primary-500"
+                  : "border-gray-300 hover:border-gray-400 dark:border-dark-450 dark:hover:border-dark-400",
             )}
           >
             <ul
@@ -128,12 +127,9 @@ export function AssignsField({ onChange, value, name }) {
                   : "border-gray-300 dark:border-dark-450",
               )}
             >
-              {/* {value.length > 0 ? ( */}
               {value?.name ? (
-                // value.map((member) => (
-                //   <li key={member.uid}>
                 <Tag
-                  onClick={() => removeItem(value.uid)}
+                  onClick={() => removeItem()}
                   component="button"
                   type="button"
                   variant="outlined"
@@ -149,8 +145,6 @@ export function AssignsField({ onChange, value, name }) {
                   <span className="mx-2">{value.name}</span>
                 </Tag>
               ) : (
-                //   </li>
-                // ))
                 <span className="h-6 italic text-gray-400 dark:text-dark-300">
                   Unassigned
                 </span>
@@ -166,13 +160,13 @@ export function AssignsField({ onChange, value, name }) {
                   input:
                     "placeholder:text-gray-400 dark:placeholder:text-dark-300",
                 }}
-                displayValue={(member) => member.text}
+                // displayValue={(member) => member.name}
                 autoComplete="off"
                 onChange={(event) => {
                   setQuery(event.target.value);
                 }}
                 value={query}
-                placeholder="Select Members"
+                placeholder={`Select ${name[0].toUpperCase()}${name.substr(1)}`}
               />
               <ComboboxButton className="absolute inset-y-0 flex items-center ltr:right-0 ltr:pr-2 rtl:left-0 rtl:pl-2">
                 <ChevronDownIcon
@@ -240,6 +234,10 @@ export function AssignsField({ onChange, value, name }) {
               )}
             </Transition>
           </div>
+
+          <InputErrorMsg when={error && typeof error !== "boolean"}>
+            {error}
+          </InputErrorMsg>
         </div>
       )}
     </Combobox>
@@ -248,6 +246,7 @@ export function AssignsField({ onChange, value, name }) {
 
 AssignsField.propTypes = {
   onChange: PropTypes.func,
-  value: PropTypes.array,
+  value: PropTypes.object,
   name: PropTypes.string,
+  error: PropTypes.string,
 };

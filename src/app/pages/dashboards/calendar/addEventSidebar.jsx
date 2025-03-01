@@ -2,6 +2,7 @@
 // Import Dependencies
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
+import TextareaAutosize from "react-textarea-autosize";
 import { toast } from "sonner";
 
 // Local Imports
@@ -19,7 +20,14 @@ import {
 } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { Delta, TextEditor } from "components/shared/form/TextEditor";
-import { Button, Card, Input, Switch, Textarea } from "components/ui";
+import {
+  Button,
+  Card,
+  Input,
+  InputErrorMsg,
+  Switch,
+  Textarea,
+} from "components/ui";
 import { DatePicker } from "components/shared/form/Datepicker";
 import {
   CheckCircleIcon,
@@ -32,6 +40,7 @@ import { TitleField } from "./titleField";
 import { AssignsField } from "./AssignsField";
 import { RadioField } from "./radioField";
 import { Combobox } from "components/shared/form/Combobox";
+import SimpleBar from "simplebar-react";
 
 // ----------------------------------------------------------------------
 
@@ -51,6 +60,9 @@ const editorModules = {
     [{ align: [] }, "image"],
     ["clean"], // remove formatting button
   ],
+  clipboard: {
+    matchVisual: false,
+  },
 };
 
 const statusOptions = [
@@ -58,7 +70,7 @@ const statusOptions = [
   { value: "pending", label: "Pending", color: "info" },
   { value: "canceled", label: "Canceled", color: "warning" },
   { value: "postponed", label: "Postponed", color: "error" },
-];
+]; 
 
 const typeOptions = [
   { value: "consultation", label: "Consultation", color: "primary" },
@@ -95,17 +107,20 @@ const AddEventSidebar = ({ addEventOpen, handleAddEventToggle }) => {
         leave="ease-in duration-200"
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
-        className="hide-scrollbar relative flex h-full w-full max-w-4xl flex-col overflow-y-auto bg-white p-4 transition-opacity duration-300 dark:bg-dark-700 sm:rounded-lg sm:px-5"
+        className="relative flex h-full w-full max-w-4xl flex-col overflow-y-auto bg-white p-4 transition-opacity duration-300 dark:bg-dark-700 sm:rounded-lg sm:px-5"
       >
-        <div className="w-full flex-col gap-y-3">
-          <DialogTitle
-            as="h3"
-            className="text-lg text-gray-800 dark:text-dark-100"
-          >
-            add new event
-          </DialogTitle>
-          <AddEventSidebarForm close={handleAddEventToggle} />
-        </div>
+        <SimpleBar className="h-full">
+          <div className="w-full flex-col gap-y-3">
+            <DialogTitle
+              as="h3"
+              className="text-lg text-gray-800 dark:text-dark-100"
+            >
+              add new event
+            </DialogTitle>
+
+            <AddEventSidebarForm close={handleAddEventToggle} />
+          </div>
+        </SimpleBar>
       </TransitionChild>
     </Transition>
   );
@@ -133,9 +148,11 @@ const AddEventSidebarForm = ({ close }) => {
     control,
     reset,
     setFocus,
+    watch,
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: initialState,
+    mode: "onTouched",
   });
 
   useEffect(() => {
@@ -143,18 +160,26 @@ const AddEventSidebarForm = ({ close }) => {
   }, [setFocus]);
 
   const onSubmit = (data) => {
+    console.log("data");
     console.log(data);
     toast("New Post Published. Now you can add new one", {
       invert: true,
     });
-    reset();
+    // reset();
     // close();
   };
+
+  useEffect(() => {
+    const { unsubscribe } = watch((value) => {
+      console.log(value);
+    });
+    return () => unsubscribe();
+  }, [watch]);
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       autoComplete="off"
-      className="flex grow flex-col"
+      className="flex grow flex-col gap-y-3"
     >
       <div className="flex gap-3">
         <div className="pt-1">
@@ -183,7 +208,12 @@ const AddEventSidebarForm = ({ close }) => {
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-2">
             <Controller
               render={({ field: { onChange, value, name } }) => (
-                <AssignsField onChange={onChange} value={value} name={name} />
+                <AssignsField
+                  onChange={onChange}
+                  value={value}
+                  name={name}
+                  error={errors?.status?.message}
+                />
               )}
               control={control}
               name="doctor"
@@ -191,7 +221,12 @@ const AddEventSidebarForm = ({ close }) => {
 
             <Controller
               render={({ field: { onChange, value, name } }) => (
-                <AssignsField onChange={onChange} value={value} name={name} />
+                <AssignsField
+                  onChange={onChange}
+                  value={value}
+                  name={name}
+                  error={errors?.status?.message}
+                />
               )}
               control={control}
               name="patient"
@@ -207,26 +242,38 @@ const AddEventSidebarForm = ({ close }) => {
         </div>
         <div className="flex-1">
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-2">
-            <Combobox
-              data={statusOptions}
-              displayField="label"
-              error={errors?.status?.message}
-              // value={selectedPage}
-              // onChange={setSelectedPage}
-              placeholder="Please Select Post"
-              searchFields={["value"]}
-              highlight
+            <Controller
+              control={control}
+              name="status"
+              render={({ field: { onChange } }) => {
+                return (
+                  <Combobox
+                    onChange={({ value }) => onChange(value)}
+                    data={statusOptions}
+                    displayField="label"
+                    error={errors?.status?.message}
+                    placeholder="Please Select Post"
+                    searchFields={["value"]}
+                    highlight
+                  />
+                );
+              }}
             />
 
-            <Combobox
-              data={typeOptions}
-              error={errors?.type?.message}
-              displayField="label"
-              // value={selectedPage}
-              // onChange={setSelectedPage}
-              placeholder="Please Select Post"
-              searchFields={["value"]}
-              highlight
+            <Controller
+              control={control}
+              name="type"
+              render={({ field: { onChange } }) => (
+                <Combobox
+                  onChange={({ value }) => onChange(value)}
+                  data={typeOptions}
+                  error={errors?.type?.message}
+                  displayField="label"
+                  placeholder="Please Select Post"
+                  searchFields={["value"]}
+                  highlight
+                />
+              )}
             />
           </div>
         </div>
@@ -238,15 +285,17 @@ const AddEventSidebarForm = ({ close }) => {
           <InformationCircleIcon className="size-6" />
         </div>
         <div className="flex-1">
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-1">
             <Controller
               control={control}
               name="status"
-              render={({ field }) => (
+              render={({ field: { onChange, value, name } }) => (
                 <RadioField
                   error={errors?.status?.message}
                   options={statusOptions}
-                  {...field}
+                  onChange={onChange}
+                  value={value}
+                  name={name}
                 />
               )}
             />
@@ -254,11 +303,13 @@ const AddEventSidebarForm = ({ close }) => {
             <Controller
               control={control}
               name="type"
-              render={({ field }) => (
+              render={({ field: { onChange, value, name } }) => (
                 <RadioField
                   error={errors?.type?.message}
-                  options={statusOptions}
-                  {...field}
+                  options={typeOptions}
+                  onChange={onChange}
+                  value={value}
+                  name={name}
                 />
               )}
             />
@@ -273,36 +324,53 @@ const AddEventSidebarForm = ({ close }) => {
         </div>
         <div className="flex flex-1 gap-3">
           {/* Start Date */}
-          <Controller
-            render={({ field }) => (
-              <DatePicker
-                label="start date:"
-                placeholder="Choose start date..."
-                options={{
-                  dateFormat: "Y-m-d",
-                }}
-                {...field}
-              />
-            )}
-            control={control}
-            name="start"
-          />
-          {/* End Date */}
 
-          <Controller
-            render={({ field }) => (
-              <DatePicker
-                label="end date:"
-                placeholder="Choose end date..."
-                options={{
-                  dateFormat: "Y-m-d",
-                }}
-                {...field}
-              />
-            )}
-            control={control}
-            name="end"
-          />
+          <div className="flex flex-col gap-y-3">
+            {" "}
+            <Controller
+              render={({ field: { onChange, name } }) => (
+                <DatePicker
+                  label="start date:"
+                  placeholder="Choose start date..."
+                  name={name}
+                  onChange={(_, dateStr) => onChange(dateStr)}
+                  options={{
+                    dateFormat: "Y-m-d H:i",
+                    enableTime: true,
+                  }}
+                />
+              )}
+              control={control}
+              name="start"
+            />
+            <InputErrorMsg when={errors?.start?.message}>
+              {errors?.start?.message}
+            </InputErrorMsg>
+          </div>
+
+          {/* End Date */}
+          <div className="flex flex-col gap-y-3">
+            <Controller
+              render={({ field: { onChange, name } }) => (
+                <DatePicker
+                  label="end date:"
+                  placeholder="Choose end date..."
+                  name={name}
+                  onChange={(_, dateStr) => onChange(dateStr)}
+                  options={{
+                    dateFormat: "Y-m-d",
+                    enableTime: true,
+                  }}
+                />
+              )}
+              control={control}
+              name="end"
+            />
+
+            <InputErrorMsg when={errors?.end?.message}>
+              {errors?.end?.message}
+            </InputErrorMsg>
+          </div>
 
           {/* All Day */}
           <Controller
@@ -340,32 +408,24 @@ const AddEventSidebarForm = ({ close }) => {
         <div className="pt-0.5">
           <DocumentTextIcon className="size-6" />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 flex-col pr-5">
           <Controller
             control={control}
-            {...register("content")}
-            render={({ field: { value, onChange, ...rest } }) => (
+            name="content"
+            render={({ field: { value, onChange } }) => (
               <TextEditor
-                value={value}
+                // value={value}
                 label="Content"
                 onChange={(val) => onChange(val)}
+                component={TextareaAutosize}
+                minRows={4}
+                maxRows={12}
                 placeholder="Enter your content..."
-                className="mt-1.5 [&_.ql-editor]:max-h-80 [&_.ql-editor]:min-h-[12rem]"
                 modules={editorModules}
                 error={errors?.content?.message}
-                {...rest}
               />
             )}
           />
-          {/* <Textarea
-            {...register("description")}
-            error={errors?.description?.message}
-            placeholder="Task Description"
-            label="Description:"
-            component={TextareaAutosize}
-            maxRows={8}
-            minRows={4}
-          /> */}
         </div>
       </div>
 
@@ -388,7 +448,7 @@ const AddEventSidebarForm = ({ close }) => {
             Cancel
           </Button>
           <Button type="submit" color="primary" className="min-w-[8rem]">
-            Update Task
+            Update Evant
           </Button>
         </div>
       </div>

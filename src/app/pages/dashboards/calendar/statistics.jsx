@@ -1,11 +1,9 @@
 // Import Dependencies
 import {
-  CheckBadgeIcon,
-  ClockIcon,
-  CubeIcon,
+  ClipboardDocumentCheckIcon,
+  ExclamationTriangleIcon,
   CurrencyDollarIcon,
-  TruckIcon,
-  UsersIcon,
+  CheckBadgeIcon,
 } from "@heroicons/react/24/outline";
 
 // Local Imports
@@ -14,63 +12,62 @@ import { Card } from "components/ui";
 // ----------------------------------------------------------------------
 
 export function Statistics() {
+  const statistics = [
+    {
+      value: "$67.6k",
+      label: "Consultation",
+      color: "primary",
+      icon: CurrencyDollarIcon,
+    },
+    {
+      value: "618",
+      label: "Control",
+      color: "secondary",
+      icon: ClipboardDocumentCheckIcon,
+    },
+    {
+      value: "46k",
+      label: "Emergency",
+      color: "warning",
+      icon: ClipboardDocumentCheckIcon,
+    },
+    {
+      value: "8.8k",
+      label: "Other",
+      color: "warning",
+      icon: ClipboardDocumentCheckIcon,
+    },
+
+    {
+      value: "7.6k",
+      label: "Completed",
+      color: "secondary",
+      icon: CheckBadgeIcon,
+    },
+    {
+      value: "143",
+      label: "Pending",
+      color: "warning",
+      icon: ExclamationTriangleIcon,
+    },
+  ];
+
   return (
     <div className="col-span-12 lg:col-span-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-2">
-        <Card className="p-3 lg:p-4">
-          <div className="flex justify-between gap-1">
-            <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              $67.6k
-            </p>
-            <CurrencyDollarIcon className="this:primary size-5 text-this dark:text-this-light" />
-          </div>
-          <p className="mt-1 text-xs+">Income</p>
-        </Card>
-        <Card className="p-3 lg:p-4">
-          <div className="flex justify-between gap-1">
-            <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              7.6k
-            </p>
-            <CheckBadgeIcon className="this:success size-5 text-this dark:text-this-light" />
-          </div>
-          <p className="mt-1 text-xs+">Completed</p>
-        </Card>
-        <Card className="p-3 lg:p-4">
-          <div className="flex justify-between gap-1">
-            <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              143
-            </p>
-            <ClockIcon className="this:warning size-5 text-this dark:text-this-light" />
-          </div>
-          <p className="mt-1 text-xs+">Pending</p>
-        </Card>
-        <Card className="p-3 lg:p-4">
-          <div className="flex justify-between gap-1">
-            <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              618
-            </p>
-            <TruckIcon className="this:info size-5 text-this dark:text-this-light" />
-          </div>
-          <p className="mt-1 text-xs+">Dispatch</p>
-        </Card>
-        <Card className="p-3 lg:p-4">
-          <div className="flex justify-between gap-1">
-            <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              46k
-            </p>
-            <CubeIcon className="this:secondary size-5 text-this dark:text-this-light" />
-          </div>
-          <p className="mt-1 text-xs+">Products</p>
-        </Card>
-        <Card className="p-3 lg:p-4">
-          <div className="flex justify-between gap-1">
-            <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              8.8k
-            </p>
-            <UsersIcon className="this:error size-5 text-this dark:text-this-light" />
-          </div>
-          <p className="mt-1 text-xs+">Customers</p>
-        </Card>
+        {statistics.map((stat, index) => (
+          <Card key={index} className="p-3 lg:p-4">
+            <div className="flex justify-between gap-1">
+              <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
+                {stat.value}
+              </p>
+              <stat.icon
+                className={`this:${stat.color} size-5 text-this dark:text-this-light`}
+              />
+            </div>
+            <p className="mt-1 text-xs+">{stat.label}</p>
+          </Card>
+        ))}
       </div>
     </div>
   );

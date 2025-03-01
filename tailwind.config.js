@@ -13,7 +13,7 @@ const surfaceColors = {
   'surface-2': 'rgb(var(--surface-2) / <alpha-value>)',
   'surface-3': 'rgb(var(--surface-3) / <alpha-value>)'
 }
-
+ 
 /** @type {import('tailwindcss').Config} */
 const config = {
   darkMode: 'class',

@@ -66,7 +66,7 @@ export function EvantSettings({ isFullScreen, setIsFullScreen }) {
           .map((column) => (
             <div
               className="flex items-center justify-between ltr:-mr-2 rtl:-ml-2"
-              key={column.id}
+              key={column.label}
             >
               <Checkbox
                 label={column?.label}

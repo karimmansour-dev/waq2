@@ -2,7 +2,7 @@
 @import "./base.css";
 @import "./layouts.css";
 @import "./variants.css";
-@import "./vars.css";
+/* @import "./vars.css"; */
 
 @import "tailwindcss/components"; /* TailwindCSS components Layer (@tailwind components)*/
 @import "./app/index.css";

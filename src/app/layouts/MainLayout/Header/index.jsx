@@ -37,7 +37,7 @@ function SlashIcon(props) {
 export function Header() {
   const { cardSkin } = useThemeContext();
 
-  return (
+  return ( 
     <header
       className={clsx(
         "app-header transition-content sticky top-0 z-20 flex h-[65px] shrink-0 items-center justify-between border-b border-gray-200 bg-white/80 px-[--margin-x] backdrop-blur backdrop-saturate-150 dark:border-dark-600",

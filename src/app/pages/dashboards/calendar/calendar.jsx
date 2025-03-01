@@ -18,15 +18,15 @@ import clsx from "clsx";
 import { setThisClass } from "utils/setThisClass";
 
 const blankEvent = {
-  title: "",
+  title: "ppp",
   start: "",
   end: "",
   allDay: false,
   url: "",
+  color: "this:primary",
   extendedProps: {
-    calendar: "",
-    guests: [],
-    description: "",
+    type: "emergency",
+    status: "postponed",
   },
 };
 
@@ -42,7 +42,7 @@ const Calendar = (props) => {
   const {
     calendarApi,
     setCalendarApi,
-    calendarsColor,
+    // calendarsColor,
     leftSidebarOpen,
     handleAddEventToggle,
     handleLeftSidebarToggle,
@@ -69,7 +69,7 @@ const Calendar = (props) => {
 
   // calendarOptions(Props)
   const calendarOptions = {
-    events: events, // Use events from Zustand store
+    events: events,
     plugins: [interactionPlugin, dayGridPlugin, timeGridPlugin, listPlugin],
     initialView: "dayGridMonth",
     headerToolbar: {
@@ -87,29 +87,9 @@ const Calendar = (props) => {
     dayMaxEvents: 2,
     navLinks: true,
 
-    // selectable={true}
-    // selectMirror={true}
-    // weekends={true}
-    // droppable={true}
-
-    eventClassNames({ event: calendarEvent }) {
-      const color = typeOptions.find(
-        (option) => option.value === calendarEvent._def.extendedProps.type,
-      )?.color;
-
-      return clsx("bg-this", setThisClass(color));
-    },
-    eventClick({ event: clickedEvent, jsEvent }) {
-      jsEvent.preventDefault();
-
-      selectEvent(clickedEvent);
-
-      handleAddEventToggle();
-      if (clickedEvent.url) {
-        // Open the URL in a new tab
-        window.open(clickedEvent.url, "_blank");
-      }
-    },
+    selectable: true,
+    selectMirror: true,
+    // weekends: true,
     customButtons: {
       sidebarToggle: {
         icon: `
@@ -125,16 +105,49 @@ const Calendar = (props) => {
         },
       },
     },
+
+    eventClassNames({ event: calendarEvent }) {
+      const color = typeOptions.find(
+        (option) => option.value === calendarEvent._def.extendedProps.type,
+      )?.color;
+
+      // console.log("color");
+      // console.log(calendarEvent._def.extendedProps.type);
+      // console.log(calendarEvent._def);
+      // console.log(color);
+
+      return clsx("bg-this", setThisClass(color));
+    },
+    eventClick({ event: clickedEvent, jsEvent }) {
+      jsEvent.preventDefault();
+      console.log("eventClick");
+      console.log(clickedEvent);
+
+      selectEvent(clickedEvent);
+
+      // handleAddEventToggle();
+      if (clickedEvent.url) {
+        // Open the URL in a new tab
+        window.open(clickedEvent.url, "_blank");
+      }
+    },
+
     dateClick(info) {
+      console.log("dateClick");
+      console.log(info);
+
       const ev = { ...blankEvent };
       ev.start = info.date;
       ev.end = info.date;
       ev.allDay = true;
 
       selectEvent(ev);
-      handleAddEventToggle();
+      //handleAddEventToggle();
     },
     eventDrop({ event: droppedEvent }) {
+      console.log("eventDrop");
+      console.log(droppedEvent);
+
       updateEvent(droppedEvent);
       filterEvents();
     },
@@ -150,15 +163,15 @@ const Calendar = (props) => {
     eventResize({ event: resizedEvent }) {
       console.log("resizedEvent");
       console.log(resizedEvent);
-      
-      updateEvent(resizedEvent);
-      filterEvents();
+
+      // updateEvent(resizedEvent);
+      // filterEvents();
     },
     ref: calendarRef,
     direction: initialDir,
   };
 
-  return <FullCalendar {...calendarOptions} />;
+  return <FullCalendar {...calendarOptions}/>;
 };
 
 export default Calendar;

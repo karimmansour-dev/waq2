@@ -51,7 +51,7 @@ const CustomCombobox = forwardRef(
     const boxSizeRef = useRef();
 
     const { width: inputWidth } = useBoxSize({ ref: boxSizeRef });
-    const { left: inputLeft, ref: boxPositionRef } = useBoxPosition();
+    const { left: inputLeft, ref: boxPositionRef } = useBoxPosition(); 
 
     return (
       <div className={clsx("flex flex-col", classNames?.root)} {...rootProps}>
