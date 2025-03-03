@@ -74,7 +74,7 @@ const statusOptions = [
   { value: "confirmed", label: "Confirmed", color: "success" },
   { value: "pending", label: "Pending", color: "info" },
   { value: "canceled", label: "Canceled", color: "warning" },
-  { value: "consultation", label: "Consultation", color: "primary" },
+  { value: "postponed", label: "Postponed", color: "error" },
 ];
 
 const typeOptions = [
@@ -147,7 +147,12 @@ const AddEventSidebarForm = ({ close }) => {
 
   const messages = {
     pending: {
-      Icon: pendingData === "canceled" ? XCircleIcon : TrashIcon,
+      Icon:
+        pendingData === "canceled"
+          ? XCircleIcon
+          : pendingData
+            ? TrashIcon
+            : ExclamationTriangleIcon,
       title: "Are you sure?",
       description:
         pendingData === "canceled"
@@ -169,19 +174,23 @@ const AddEventSidebarForm = ({ close }) => {
     url: "",
     title: "",
     start: new Date(),
-    end: "",
+    end: new Date(),
     allDay: false,
-    doctor: {},
+    doctor: {
+      uid: "1",
+      name: "John Doe",
+      avatar: null,
+    },
     patient: {},
-    status: extendedProps?.status,
-    type: extendedProps?.type,
+    status: extendedProps?.status || "confirmed",
+    type: extendedProps?.type || "control",
     content: new Delta(),
     ...rest,
   };
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     control,
     reset,
     setFocus,
@@ -254,9 +263,7 @@ const AddEventSidebarForm = ({ close }) => {
       }, 5000),
     )
       .then(() => {
-        setConfirmLoading(false);
         setSuccess(true);
-        setError(false);
 
         if (pendingData === "canceled") {
           setValue("status", "canceled");
@@ -266,8 +273,14 @@ const AddEventSidebarForm = ({ close }) => {
         }
       })
       .catch(() => {
-        setConfirmLoading(false);
         setError(true);
+      })
+      .finally(() => {
+        console.log("finally");
+
+        setConfirmLoading(false);
+        setSuccess(false);
+        setError(false);
       });
   };
 
@@ -307,11 +320,7 @@ const AddEventSidebarForm = ({ close }) => {
                 render={({ field: { onChange, value, name } }) => (
                   <AssignsField
                     onChange={onChange}
-                    value={{
-                      uid: "1",
-                      name: "John Doe",
-                      avatar: null,
-                    }}
+                    value={value}
                     name={name}
                     error={errors?.status?.message}
                   />
@@ -350,9 +359,7 @@ const AddEventSidebarForm = ({ close }) => {
                   return (
                     <Combobox
                       onChange={handleStatusChange(onChange)}
-                      value={
-                        statusOptions.find((opt) => opt.value === value) || null
-                      }
+                      value={statusOptions.find((opt) => opt.value === value)}
                       data={statusOptions}
                       displayField="label"
                       error={errors?.status?.message}
@@ -370,9 +377,7 @@ const AddEventSidebarForm = ({ close }) => {
                 render={({ field: { onChange, value } }) => (
                   <Combobox
                     onChange={({ value }) => onChange(value)}
-                    value={
-                      typeOptions.find((opt) => opt.value === value) || null
-                    }
+                    value={typeOptions.find((opt) => opt.value === value)}
                     data={typeOptions}
                     error={errors?.type?.message}
                     displayField="label"
@@ -429,7 +434,7 @@ const AddEventSidebarForm = ({ close }) => {
           <div className="pt-0.5">
             <LinkIcon className="size-6" />
           </div>
-          <div className="flex flex-1 gap-3">
+          <div className="flex flex-1 items-center justify-around">
             {/* Start Date */}
 
             <div className="flex flex-col gap-y-3">
@@ -440,7 +445,7 @@ const AddEventSidebarForm = ({ close }) => {
                     label="start date:"
                     placeholder="Choose start date..."
                     name={name}
-                    value={value ? new Date(value) : null}
+                    value={new Date(value)}
                     onChange={(_, dateStr) => onChange(dateStr)}
                     options={{
                       dateFormat: "Y-m-d H:i",
@@ -464,7 +469,7 @@ const AddEventSidebarForm = ({ close }) => {
                     label="end date:"
                     placeholder="Choose end date..."
                     name={name}
-                    value={value ? new Date(value) : null}
+                    value={new Date(value)}
                     onChange={(_, dateStr) => onChange(dateStr)}
                     options={{
                       dateFormat: "Y-m-d",
@@ -488,6 +493,7 @@ const AddEventSidebarForm = ({ close }) => {
               name="allDay"
               render={({ field }) => (
                 <Switch
+                  classNames={{ label: "flex flex-col" }}
                   {...field}
                   label="All Day"
                   error={errors?.allDay?.message}
@@ -555,7 +561,12 @@ const AddEventSidebarForm = ({ close }) => {
             <Button onClick={close} variant="flat" className="min-w-[8rem]">
               Cancel
             </Button>
-            <Button type="submit" color="primary" className="min-w-[8rem]">
+            <Button
+              type="submit"
+              color="primary"
+              className="min-w-[8rem]"
+              disabled={!isValid}
+            >
               Update Evant
             </Button>
           </div>

@@ -2,6 +2,7 @@
 import * as Yup from "yup";
 
 // Local Imports
+// eslint-disable-next-line no-unused-vars
 import { isDeltaNotEmpty } from "utils/quillUtils";
 
 // ----------------------------------------------------------------------
@@ -33,7 +34,7 @@ export const schema = Yup.object().shape({
     .shape({
       uid: Yup.string().required("Doctor's ID is required"),
       name: Yup.string().required("Doctor's name is required"),
-      avatar: Yup.string().required("Doctor's avatar is required"),
+      avatar: Yup.string().nullable(), //.required("Doctor's avatar is required"),
     })
     .required("Doctor's information is required"),
 
@@ -41,7 +42,7 @@ export const schema = Yup.object().shape({
     .shape({
       uid: Yup.string().required("Patient's ID is required"),
       name: Yup.string().required("Patient's name is required"),
-      avatar: Yup.string().required("Patient's avatar is required"),
+      avatar: Yup.string().nullable(), //.required("Patient's avatar is required"),
     })
     .required("Patient's information is required"),
 
@@ -61,9 +62,9 @@ export const schema = Yup.object().shape({
 
   url: Yup.string().url("Invalid URL").nullable(),
 
-  content: Yup.object()
-    .required("Content is required")
-    .test("notEmpty", "Content Can't be empty", isDeltaNotEmpty),
+  content: Yup.object().nullable(),
+  // .required("Content is required")
+  // .test("notEmpty", "Content Can't be empty", isDeltaNotEmpty),
 
   // createdAt: Yup.date().required("Created date is required"),
   // updatedAt: Yup.date().required("Updated date is required"),
