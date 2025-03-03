@@ -62,7 +62,7 @@ const CalendarWrapper = () => {
           setIsFullScreen={setIsFullScreen}
         />
 
-        <div className="my-[200px] flex w-full flex-1 gap-x-10">
+        <div className="mb-[200px] flex w-full flex-1 gap-x-10">
           <SidebarLeft
             mdAbove={mdAndUp}
             calendarApi={calendarApi}
@@ -84,11 +84,11 @@ const CalendarWrapper = () => {
           </AppFullCalendar>
         </div>
 
-        <Statistics />
+        {/* <Statistics />
         <br />
         <br />
         <br />
-        <br />
+        <br /> */}
 
         <AddEventSidebar
           calendarApi={calendarApi}

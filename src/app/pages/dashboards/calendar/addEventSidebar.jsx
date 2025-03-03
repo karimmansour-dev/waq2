@@ -18,7 +18,7 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Delta, TextEditor } from "components/shared/form/TextEditor";
 import {
   Button,
@@ -32,6 +32,7 @@ import { DatePicker } from "components/shared/form/Datepicker";
 import {
   CheckCircleIcon,
   DocumentTextIcon,
+  ExclamationTriangleIcon,
   InformationCircleIcon,
   LinkIcon,
   TrashIcon,
@@ -41,6 +42,9 @@ import { AssignsField } from "./AssignsField";
 import { RadioField } from "./radioField";
 import { Combobox } from "components/shared/form/Combobox";
 import SimpleBar from "simplebar-react";
+import useCalendarStore from "./store";
+import { ConfirmModal } from "components/shared/ConfirmModal";
+import { useDisclosure } from "hooks";
 
 // ----------------------------------------------------------------------
 
@@ -69,8 +73,8 @@ const statusOptions = [
   { value: "confirmed", label: "Confirmed", color: "success" },
   { value: "pending", label: "Pending", color: "info" },
   { value: "canceled", label: "Canceled", color: "warning" },
-  { value: "postponed", label: "Postponed", color: "error" },
-]; 
+  { value: "consultation", label: "Consultation", color: "primary" },
+];
 
 const typeOptions = [
   { value: "consultation", label: "Consultation", color: "primary" },
@@ -127,8 +131,38 @@ const AddEventSidebar = ({ addEventOpen, handleAddEventToggle }) => {
 };
 
 const AddEventSidebarForm = ({ close }) => {
+  const { selectedEvent, addEvent, updateEvent, filterEvents, deleteEvent } =
+    useCalendarStore();
+
+  const { extendedProps, ...rest } = selectedEvent || {};
+
+  //Confirm Modal
+  const [isOpen, { open, close: Mclose }] = useDisclosure();
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+  const state = error ? "error" : success ? "success" : "pending";
+  const [pendingType, setPendingType] = useState(null);
+
+  const messages = {
+    pending: {
+      Icon: ExclamationTriangleIcon,
+      title: "Are you sure?",
+      description:
+        "Are you sure you want to delete this record? Once deleted, it cannot be restored.",
+      actionText: "Delete",
+    },
+    success: {
+      title: "Record Deleted",
+    },
+    error: {
+      description:
+        "Ensure internet is on and retry. Contact support if issue remains.",
+    },
+  };
+
   const initialState = {
-    id: "",
+    id: "11",
     url: "",
     title: "",
     start: new Date(),
@@ -136,11 +170,11 @@ const AddEventSidebarForm = ({ close }) => {
     allDay: false,
     doctor: {},
     patient: {},
-    status: "confirmed",
-    type: "consultation",
+    status: extendedProps?.status,
+    type: extendedProps?.type,
     content: new Delta(),
+    ...rest,
   };
-
   const {
     register,
     handleSubmit,
@@ -149,11 +183,16 @@ const AddEventSidebarForm = ({ close }) => {
     reset,
     setFocus,
     watch,
+    setValue,
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: initialState,
     mode: "onTouched",
   });
+
+  console.log("filterEvents");
+  console.log(initialState);
+  console.log(selectedEvent);
 
   useEffect(() => {
     setFocus("name");
@@ -162,11 +201,27 @@ const AddEventSidebarForm = ({ close }) => {
   const onSubmit = (data) => {
     console.log("data");
     console.log(data);
-    toast("New Post Published. Now you can add new one", {
-      invert: true,
-    });
-    // reset();
+
+    return;
+    // toast("New Post Published. Now you can add new one", {
+    //   invert: true,
+    // });
+
+    // if (!selectedEvent) {
+    //   addEvent(data);
+    // } else {
+    //   updateEvent(data, { id: initialState.id });
+    // }
+
+    // //filterEvents();
+
+    // // reset();
     // close();
+  };
+
+  const handleDeleteButtonClick = (id) => {
+    deleteEvent(id);
+    filterEvents();
   };
 
   useEffect(() => {
@@ -175,284 +230,340 @@ const AddEventSidebarForm = ({ close }) => {
     });
     return () => unsubscribe();
   }, [watch]);
+
+  const handleTypeChange =
+    (onChange) =>
+    ({ value }) => {
+      if (value === "emergency") {
+        console.log("value");
+        console.log(value);
+        setPendingType(value);
+        open();
+      } else {
+        onChange(value);
+      }
+    };
+
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      autoComplete="off"
-      className="flex grow flex-col gap-y-3"
-    >
-      <div className="flex gap-3">
-        <div className="pt-1">
-          <CheckCircleIcon className="size-6" />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-start justify-between gap-4">
-            <TitleField
-              register={register}
-              error={errors?.title?.message}
-              listName={"..."}
-            />
-            <Button onClick={close} className="px-3 py-1.5 text-xs">
-              ESC
-            </Button>
+    <>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        autoComplete="off"
+        className="flex grow flex-col gap-y-3"
+      >
+        <div className="flex gap-3">
+          <div className="pt-1">
+            <CheckCircleIcon className="size-6" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-start justify-between gap-4">
+              <TitleField
+                register={register}
+                error={errors?.title?.message}
+                listName={"..."}
+              />
+              <Button onClick={close} className="px-3 py-1.5 text-xs">
+                ESC
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Full Nam */}
-      <div className="mt-5 flex gap-3">
-        <div className="pt-0.5">
-          <InformationCircleIcon className="size-6" />
-        </div>
-        <div className="flex-1">
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-2">
-            <Controller
-              render={({ field: { onChange, value, name } }) => (
-                <AssignsField
-                  onChange={onChange}
-                  value={value}
-                  name={name}
-                  error={errors?.status?.message}
-                />
-              )}
-              control={control}
-              name="doctor"
-            />
-
-            <Controller
-              render={({ field: { onChange, value, name } }) => (
-                <AssignsField
-                  onChange={onChange}
-                  value={value}
-                  name={name}
-                  error={errors?.status?.message}
-                />
-              )}
-              control={control}
-              name="patient"
-            />
+        {/* Full Nam */}
+        <div className="mt-5 flex gap-3">
+          <div className="pt-0.5">
+            <InformationCircleIcon className="size-6" />
           </div>
-        </div>
-      </div>
-
-      {/* Combobox */}
-      <div className="mt-5 flex gap-3">
-        <div className="pt-0.5">
-          <InformationCircleIcon className="size-6" />
-        </div>
-        <div className="flex-1">
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-2">
-            <Controller
-              control={control}
-              name="status"
-              render={({ field: { onChange } }) => {
-                return (
-                  <Combobox
-                    onChange={({ value }) => onChange(value)}
-                    data={statusOptions}
-                    displayField="label"
+          <div className="flex-1">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-2">
+              <Controller
+                render={({ field: { onChange, value, name } }) => (
+                  <AssignsField
+                    onChange={onChange}
+                    value={{
+                      uid: "1",
+                      name: "John Doe",
+                      avatar: null,
+                    }}
+                    name={name}
                     error={errors?.status?.message}
+                  />
+                )}
+                control={control}
+                name="doctor"
+              />
+
+              <Controller
+                render={({ field: { onChange, value, name } }) => (
+                  <AssignsField
+                    onChange={onChange}
+                    value={value}
+                    name={name}
+                    error={errors?.status?.message}
+                  />
+                )}
+                control={control}
+                name="patient"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Combobox */}
+        <div className="mt-5 flex gap-3">
+          <div className="pt-0.5">
+            <InformationCircleIcon className="size-6" />
+          </div>
+          <div className="flex-1">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-2">
+              <Controller
+                control={control}
+                name="status"
+                render={({ field: { onChange, value } }) => {
+                  return (
+                    <Combobox
+                      onChange={({ value }) => onChange(value)}
+                      value={
+                        statusOptions.find((opt) => opt.value === value) || null
+                      }
+                      data={statusOptions}
+                      displayField="label"
+                      error={errors?.status?.message}
+                      placeholder="Please Select Post"
+                      searchFields={["value"]}
+                      highlight
+                    />
+                  );
+                }}
+              />
+
+              <Controller
+                control={control}
+                name="type"
+                render={({ field: { onChange, value } }) => (
+                  <Combobox
+                    onChange={handleTypeChange(onChange)}
+                    value={
+                      typeOptions.find((opt) => opt.value === value) || null
+                    }
+                    data={typeOptions}
+                    error={errors?.type?.message}
+                    displayField="label"
                     placeholder="Please Select Post"
                     searchFields={["value"]}
                     highlight
                   />
-                );
-              }}
-            />
-
-            <Controller
-              control={control}
-              name="type"
-              render={({ field: { onChange } }) => (
-                <Combobox
-                  onChange={({ value }) => onChange(value)}
-                  data={typeOptions}
-                  error={errors?.type?.message}
-                  displayField="label"
-                  placeholder="Please Select Post"
-                  searchFields={["value"]}
-                  highlight
-                />
-              )}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* RadioGroup */}
-      <div className="mt-5 flex gap-3">
-        <div className="pt-0.5">
-          <InformationCircleIcon className="size-6" />
-        </div>
-        <div className="flex-1">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-1">
-            <Controller
-              control={control}
-              name="status"
-              render={({ field: { onChange, value, name } }) => (
-                <RadioField
-                  error={errors?.status?.message}
-                  options={statusOptions}
-                  onChange={onChange}
-                  value={value}
-                  name={name}
-                />
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="type"
-              render={({ field: { onChange, value, name } }) => (
-                <RadioField
-                  error={errors?.type?.message}
-                  options={typeOptions}
-                  onChange={onChange}
-                  value={value}
-                  name={name}
-                />
-              )}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* date */}
-      <div className="mt-5 flex gap-3">
-        <div className="pt-0.5">
-          <LinkIcon className="size-6" />
-        </div>
-        <div className="flex flex-1 gap-3">
-          {/* Start Date */}
-
-          <div className="flex flex-col gap-y-3">
-            {" "}
-            <Controller
-              render={({ field: { onChange, name } }) => (
-                <DatePicker
-                  label="start date:"
-                  placeholder="Choose start date..."
-                  name={name}
-                  onChange={(_, dateStr) => onChange(dateStr)}
-                  options={{
-                    dateFormat: "Y-m-d H:i",
-                    enableTime: true,
-                  }}
-                />
-              )}
-              control={control}
-              name="start"
-            />
-            <InputErrorMsg when={errors?.start?.message}>
-              {errors?.start?.message}
-            </InputErrorMsg>
-          </div>
-
-          {/* End Date */}
-          <div className="flex flex-col gap-y-3">
-            <Controller
-              render={({ field: { onChange, name } }) => (
-                <DatePicker
-                  label="end date:"
-                  placeholder="Choose end date..."
-                  name={name}
-                  onChange={(_, dateStr) => onChange(dateStr)}
-                  options={{
-                    dateFormat: "Y-m-d",
-                    enableTime: true,
-                  }}
-                />
-              )}
-              control={control}
-              name="end"
-            />
-
-            <InputErrorMsg when={errors?.end?.message}>
-              {errors?.end?.message}
-            </InputErrorMsg>
-          </div>
-
-          {/* All Day */}
-          <Controller
-            control={control}
-            error={errors?.allDay?.message}
-            name="allDay"
-            render={({ field }) => (
-              <Switch
-                {...field}
-                label="All Day"
-                error={errors?.allDay?.message}
+                )}
               />
-            )}
-          />
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* URL */}
-      <div className="mt-5 flex gap-3">
-        <div className="pt-0.5">
-          <LinkIcon className="size-6" />
-        </div>
-        <div className="flex-1">
-          <Input
-            {...register("url")}
-            label="URL"
-            error={errors?.url?.message}
-            placeholder="Enter URL"
-          />
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="mt-5 flex gap-3">
-        <div className="pt-0.5">
-          <DocumentTextIcon className="size-6" />
-        </div>
-        <div className="flex-1 flex-col pr-5">
-          <Controller
-            control={control}
-            name="content"
-            render={({ field: { value, onChange } }) => (
-              <TextEditor
-                // value={value}
-                label="Content"
-                onChange={(val) => onChange(val)}
-                component={TextareaAutosize}
-                minRows={4}
-                maxRows={12}
-                placeholder="Enter your content..."
-                modules={editorModules}
-                error={errors?.content?.message}
+        {/* RadioGroup */}
+        <div className="mt-5 flex gap-3">
+          <div className="pt-0.5">
+            <InformationCircleIcon className="size-6" />
+          </div>
+          <div className="flex-1">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-1">
+              <Controller
+                control={control}
+                name="status"
+                render={({ field: { onChange, value, name } }) => (
+                  <RadioField
+                    error={errors?.status?.message}
+                    options={statusOptions}
+                    onChange={onChange}
+                    value={value}
+                    name={name}
+                  />
+                )}
               />
-            )}
-          />
-        </div>
-      </div>
 
-      {/* Submit Button */}
-      <div className="mt-6 flex justify-between">
-        <Button
-          onClick={() => {
-            // deleteTask(data.id)
-            console.log("deleteTask");
-          }}
-          color="error"
-          className="gap-2 md:min-w-[8rem]"
-        >
-          <TrashIcon className="size-4.5" />
-          <div className="max-md:hidden">Delete</div>
-        </Button>
-
-        <div className="flex justify-end gap-4">
-          <Button onClick={close} variant="flat" className="min-w-[8rem]">
-            Cancel
-          </Button>
-          <Button type="submit" color="primary" className="min-w-[8rem]">
-            Update Evant
-          </Button>
+              <Controller
+                control={control}
+                name="type"
+                render={({ field: { onChange, value, name } }) => (
+                  <RadioField
+                    error={errors?.type?.message}
+                    options={typeOptions}
+                    onChange={onChange}
+                    value={value}
+                    name={name}
+                  />
+                )}
+              />
+            </div>
+          </div>
         </div>
-      </div>
-    </form>
+
+        {/* date */}
+        <div className="mt-5 flex gap-3">
+          <div className="pt-0.5">
+            <LinkIcon className="size-6" />
+          </div>
+          <div className="flex flex-1 gap-3">
+            {/* Start Date */}
+
+            <div className="flex flex-col gap-y-3">
+              {" "}
+              <Controller
+                render={({ field: { onChange, value, name } }) => (
+                  <DatePicker
+                    label="start date:"
+                    placeholder="Choose start date..."
+                    name={name}
+                    value={value ? new Date(value) : null}
+                    onChange={(_, dateStr) => onChange(dateStr)}
+                    options={{
+                      dateFormat: "Y-m-d H:i",
+                      enableTime: true,
+                    }}
+                  />
+                )}
+                control={control}
+                name="start"
+              />
+              <InputErrorMsg when={errors?.start?.message}>
+                {errors?.start?.message}
+              </InputErrorMsg>
+            </div>
+
+            {/* End Date */}
+            <div className="flex flex-col gap-y-3">
+              <Controller
+                render={({ field: { onChange, value, name } }) => (
+                  <DatePicker
+                    label="end date:"
+                    placeholder="Choose end date..."
+                    name={name}
+                    value={value ? new Date(value) : null}
+                    onChange={(_, dateStr) => onChange(dateStr)}
+                    options={{
+                      dateFormat: "Y-m-d",
+                      enableTime: true,
+                    }}
+                  />
+                )}
+                control={control}
+                name="end"
+              />
+
+              <InputErrorMsg when={errors?.end?.message}>
+                {errors?.end?.message}
+              </InputErrorMsg>
+            </div>
+
+            {/* All Day */}
+            <Controller
+              control={control}
+              error={errors?.allDay?.message}
+              name="allDay"
+              render={({ field }) => (
+                <Switch
+                  {...field}
+                  label="All Day"
+                  error={errors?.allDay?.message}
+                />
+              )}
+            />
+          </div>
+        </div>
+
+        {/* URL */}
+        <div className="mt-5 flex gap-3">
+          <div className="pt-0.5">
+            <LinkIcon className="size-6" />
+          </div>
+          <div className="flex-1">
+            <Input
+              {...register("url")}
+              label="URL"
+              error={errors?.url?.message}
+              placeholder="Enter URL"
+            />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="mt-5 flex gap-3">
+          <div className="pt-0.5">
+            <DocumentTextIcon className="size-6" />
+          </div>
+          <div className="flex-1 flex-col pr-5">
+            <Controller
+              control={control}
+              name="content"
+              render={({ field: { value, onChange } }) => (
+                <TextEditor
+                  // value={value}
+                  label="Content"
+                  onChange={(val) => onChange(val)}
+                  component={TextareaAutosize}
+                  minRows={4}
+                  maxRows={12}
+                  placeholder="Enter your content..."
+                  modules={editorModules}
+                  error={errors?.content?.message}
+                />
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="mt-6 flex justify-between">
+          {initialState?.id && (
+            <Button
+              onClick={() => handleDeleteButtonClick(initialState.id)}
+              color="error"
+              className="gap-2 md:min-w-[8rem]"
+            >
+              <TrashIcon className="size-4.5" />
+              <div className="max-md:hidden">Delete</div>
+            </Button>
+          )}
+
+          <div className="flex justify-end gap-4">
+            <Button onClick={close} variant="flat" className="min-w-[8rem]">
+              Cancel
+            </Button>
+            <Button type="submit" color="primary" className="min-w-[8rem]">
+              Update Evant
+            </Button>
+          </div>
+        </div>
+      </form>
+
+      <ConfirmModal
+        show={isOpen}
+        onClose={() => {
+          setPendingType(null);
+          close();
+        }}
+        messages={messages}
+        onOk={() => {
+          setConfirmLoading(true);
+          new Promise((resolve, reject) =>
+            setTimeout(() => {
+              Math.random() > 0.5 ? resolve() : reject();
+            }, 5000),
+          )
+            .then(() => {
+              setConfirmLoading(false);
+              setSuccess(true);
+              setError(false);
+              setValue("type", pendingType);
+            })
+            .catch(() => {
+              setConfirmLoading(false);
+              setError(true);
+            });
+        }}
+        confirmLoading={confirmLoading}
+        state={state}
+      />
+    </>
   );
 };
 

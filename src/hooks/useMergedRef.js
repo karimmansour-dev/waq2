@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 
 // Local Imports
-import { assignRef } from 'utils/dom/assignRef';
+import { assignRef } from 'utils/dom/assignRef'; 
 
 // ----------------------------------------------------------------------
 

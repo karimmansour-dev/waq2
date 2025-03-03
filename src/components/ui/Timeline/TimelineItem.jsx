@@ -31,7 +31,7 @@ const TimelineItem = ({
   point,
   color = "neutral",
   variant,
-  className,
+  className, 
   classNames = {},
   isPing,
   ...rest

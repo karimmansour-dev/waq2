@@ -305,6 +305,7 @@ const AppFullCalendar = styled("div")(() => {
         },
         "& .fc-toolbar-title": {
           marginInline: "1rem",
+          color: primary[700],
           ...typography.h4,
         },
         ".fc-button:empty:not(.fc-sidebarToggle-button), & .fc-toolbar-chunk:empty":

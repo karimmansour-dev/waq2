@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // Import Dependencies
 import { useState } from "react";
 
@@ -7,6 +8,7 @@ import { FacedtedFilter } from "./FacedtedFilter";
 import { ChartBarIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { CalendarConfig } from "./calendarConfig";
 import PropTypes from "prop-types";
+import useCalendarStore from "./store";
 
 // ----------------------------------------------------------------------
 
@@ -18,7 +20,14 @@ const statusOptions = [
 ];
 
 export function CalendarHeader({ isFullScreen, setIsFullScreen }) {
-  const [globalFilter, setGlobalFilter] = useState("");
+  // const [globalFilter, setGlobalFilter] = useState("");
+  const {
+    selectedStatuses,
+    filterStatusLabel,
+    // filterAllStatusLabels,
+    globalFilter,
+    setGlobalFilter,
+  } = useCalendarStore();
 
   return (
     <div>
@@ -26,7 +35,7 @@ export function CalendarHeader({ isFullScreen, setIsFullScreen }) {
         <h2 className="truncate text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">
           Calendar Details
         </h2>
-        <div className="flex">
+        <div className="flex gap-x-2 p-1">
           <CollapsibleSearch
             placeholder="Search here..."
             value={globalFilter ?? ""}
@@ -36,6 +45,26 @@ export function CalendarHeader({ isFullScreen, setIsFullScreen }) {
             options={statusOptions}
             title="Status"
             Icon={ChartBarIcon}
+            onChange={(values) => {
+              const isAdding = values.length > selectedStatuses.length;
+
+              let changedItem;
+              if (isAdding) {
+                changedItem = values.find(
+                  (val) => !selectedStatuses.includes(val),
+                );
+              } else {
+                changedItem = selectedStatuses.find(
+                  (val) => !values.includes(val),
+                );
+              }
+
+              // if (values.length === statusOptions?.length) {
+              //   filterAllStatusLabels(true);
+              // } else {
+              filterStatusLabel(changedItem);
+              // }
+            }}
           />
           <CalendarConfig
             isFullScreen={isFullScreen}

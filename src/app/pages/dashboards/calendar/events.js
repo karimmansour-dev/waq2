@@ -12,7 +12,6 @@ const prevMonth =
     ? new Date(date.getFullYear() - 1, 0, 1)
     : new Date(date.getFullYear(), date.getMonth() - 1, 1);
 
-  
 export const events = [
   {
     id: "1",

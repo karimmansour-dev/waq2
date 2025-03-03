@@ -24,7 +24,6 @@ import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 // ----------------------------------------------------------------------
 
 export function FacedtedFilter({
-  // column,
   title,
   options,
   labelField = "label",
@@ -32,11 +31,15 @@ export function FacedtedFilter({
   Icon,
   renderPrefix,
   showCheckbox = true,
+  onChange,
 }) {
   const [selectedValues, setSelectedValues] = useState([]);
-  useEffect(() => () => setSelectedValues([]), []);
+  useEffect(
+    () => () =>
+      setSelectedValues(["confirmed", "pending", "canceled", "postponed"]),
+    [],
+  );
 
-  // const selectedValues = column?.getFilterValue() || [];
   const selectedItems = options?.filter((o) =>
     selectedValues.includes(o[valueField]),
   );
@@ -75,7 +78,6 @@ export function FacedtedFilter({
     >
       <ComboboxFilter
         {...{
-          // column,
           title,
           options,
           labelField,
@@ -84,6 +86,7 @@ export function FacedtedFilter({
           showCheckbox,
           selectedValues,
           setSelectedValues,
+          onChange,
         }}
       />
     </ResponsiveFilter>
@@ -91,7 +94,6 @@ export function FacedtedFilter({
 }
 
 function ComboboxFilter({
-  // column,
   title,
   options,
   labelField,
@@ -100,6 +102,7 @@ function ComboboxFilter({
   showCheckbox,
   selectedValues,
   setSelectedValues,
+  onChange,
 }) {
   const inputRef = useRef();
   const {
@@ -123,7 +126,9 @@ function ComboboxFilter({
     <Combobox
       value={options?.filter((o) => selectedValues.includes(o[valueField]))}
       onChange={(list) => {
-        setSelectedValues(list.map((item) => item[valueField]));
+        const values = list.map((item) => item[valueField]);
+        setSelectedValues(values);
+        onChange(values);
       }}
       multiple
       className="h-[366px] sm:h-auto sm:max-h-80 sm:w-56"
@@ -183,7 +188,10 @@ function ComboboxFilter({
         </ComboboxOptions>
         {selectedValues?.length > 0 && (
           <Button
-            onClick={() => setSelectedValues([])}
+            onClick={() => {
+              setSelectedValues([]);
+              onChange([]);
+            }}
             className="w-full shrink-0 rounded-none"
           >
             Clear Filter
@@ -195,7 +203,6 @@ function ComboboxFilter({
 }
 
 FacedtedFilter.propTypes = {
-  // column: PropTypes.object,
   title: PropTypes.string,
   labelField: PropTypes.string,
   valueField: PropTypes.string,
@@ -203,10 +210,10 @@ FacedtedFilter.propTypes = {
   Icon: PropTypes.elementType,
   renderPrefix: PropTypes.func,
   showCheckbox: PropTypes.bool,
+  onChange: PropTypes.func,
 };
 
 ComboboxFilter.propTypes = {
-  // column: PropTypes.object,
   title: PropTypes.string,
   labelField: PropTypes.string,
   valueField: PropTypes.string,
@@ -215,4 +222,5 @@ ComboboxFilter.propTypes = {
   showCheckbox: PropTypes.bool,
   selectedValues: PropTypes.array,
   setSelectedValues: PropTypes.func,
+  onChange: PropTypes.func,
 };

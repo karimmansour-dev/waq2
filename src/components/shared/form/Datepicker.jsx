@@ -14,7 +14,7 @@ import { Flatpickr } from "./Flatpickr";
 import { Input } from "components/ui/Form/Input";
 import { useLocaleContext } from "app/contexts/locale/context";
 import { useMergedRef } from "hooks";
-import { locales } from "i18n/langs";
+import { locales } from "i18n/langs"; 
 
 // ----------------------------------------------------------------------
 
@@ -49,7 +49,12 @@ const DatePicker = forwardRef(
 
     const options = {
       inline: isCalendar,
-      locale: localeData,
+      locale: {
+        ...localeData,
+        firstDayOfWeek: userOptions?.locale?.firstDayOfWeek
+          ? userOptions.locale.firstDayOfWeek
+          : localeData?.firstDayOfWeek,
+      },
       ...userOptions,
     };
 
