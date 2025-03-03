@@ -36,6 +36,7 @@ import {
   InformationCircleIcon,
   LinkIcon,
   TrashIcon,
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { TitleField } from "./titleField";
 import { AssignsField } from "./AssignsField";
@@ -142,18 +143,20 @@ const AddEventSidebarForm = ({ close }) => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const state = error ? "error" : success ? "success" : "pending";
-  const [pendingType, setPendingType] = useState(null);
+  const [pendingData, setPendingData] = useState(null);
 
   const messages = {
     pending: {
-      Icon: ExclamationTriangleIcon,
+      Icon: pendingData === "canceled" ? XCircleIcon : TrashIcon,
       title: "Are you sure?",
       description:
-        "Are you sure you want to delete this record? Once deleted, it cannot be restored.",
-      actionText: "Delete",
+        pendingData === "canceled"
+          ? "Are you sure you want to change the status to canceled?"
+          : "Are you sure you want to delete this record? Once deleted, it cannot be restored.",
+      actionText: pendingData === "canceled" ? "Change Status" : "Delete",
     },
     success: {
-      title: "Record Deleted",
+      title: pendingData === "canceled" ? "Status Changed" : "Record Deleted",
     },
     error: {
       description:
@@ -202,10 +205,11 @@ const AddEventSidebarForm = ({ close }) => {
     console.log("data");
     console.log(data);
 
+    toast("New Post Published. Now you can add new one", {
+      invert: true,
+    });
+
     return;
-    // toast("New Post Published. Now you can add new one", {
-    //   invert: true,
-    // });
 
     // if (!selectedEvent) {
     //   addEvent(data);
@@ -219,11 +223,6 @@ const AddEventSidebarForm = ({ close }) => {
     // close();
   };
 
-  const handleDeleteButtonClick = (id) => {
-    deleteEvent(id);
-    filterEvents();
-  };
-
   useEffect(() => {
     const { unsubscribe } = watch((value) => {
       console.log(value);
@@ -231,18 +230,46 @@ const AddEventSidebarForm = ({ close }) => {
     return () => unsubscribe();
   }, [watch]);
 
-  const handleTypeChange =
+  const handleDeleteButtonClick = (id) => {
+    setPendingData(id);
+    open();
+  };
+
+  const handleStatusChange =
     (onChange) =>
     ({ value }) => {
-      if (value === "emergency") {
-        console.log("value");
-        console.log(value);
-        setPendingType(value);
+      if (value === "canceled") {
+        setPendingData("canceled");
         open();
       } else {
         onChange(value);
       }
     };
+
+  const handleConfirm = () => {
+    setConfirmLoading(true);
+    new Promise((resolve, reject) =>
+      setTimeout(() => {
+        Math.random() > 0.5 ? resolve() : reject();
+      }, 5000),
+    )
+      .then(() => {
+        setConfirmLoading(false);
+        setSuccess(true);
+        setError(false);
+
+        if (pendingData === "canceled") {
+          setValue("status", "canceled");
+        } else {
+          deleteEvent(pendingData);
+          filterEvents();
+        }
+      })
+      .catch(() => {
+        setConfirmLoading(false);
+        setError(true);
+      });
+  };
 
   return (
     <>
@@ -322,7 +349,7 @@ const AddEventSidebarForm = ({ close }) => {
                 render={({ field: { onChange, value } }) => {
                   return (
                     <Combobox
-                      onChange={({ value }) => onChange(value)}
+                      onChange={handleStatusChange(onChange)}
                       value={
                         statusOptions.find((opt) => opt.value === value) || null
                       }
@@ -342,7 +369,7 @@ const AddEventSidebarForm = ({ close }) => {
                 name="type"
                 render={({ field: { onChange, value } }) => (
                   <Combobox
-                    onChange={handleTypeChange(onChange)}
+                    onChange={({ value }) => onChange(value)}
                     value={
                       typeOptions.find((opt) => opt.value === value) || null
                     }
@@ -538,28 +565,11 @@ const AddEventSidebarForm = ({ close }) => {
       <ConfirmModal
         show={isOpen}
         onClose={() => {
-          setPendingType(null);
-          close();
+          setPendingData(null);
+          Mclose();
         }}
         messages={messages}
-        onOk={() => {
-          setConfirmLoading(true);
-          new Promise((resolve, reject) =>
-            setTimeout(() => {
-              Math.random() > 0.5 ? resolve() : reject();
-            }, 5000),
-          )
-            .then(() => {
-              setConfirmLoading(false);
-              setSuccess(true);
-              setError(false);
-              setValue("type", pendingType);
-            })
-            .catch(() => {
-              setConfirmLoading(false);
-              setError(true);
-            });
-        }}
+        onOk={handleConfirm}
         confirmLoading={confirmLoading}
         state={state}
       />
