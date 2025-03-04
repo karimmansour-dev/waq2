@@ -11,23 +11,12 @@ import {
   Dialog,
   DialogPanel,
   DialogTitle,
-  Field,
-  Label,
-  Radio,
-  RadioGroup,
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Delta, TextEditor } from "components/shared/form/TextEditor";
-import {
-  Button,
-  Card,
-  Input,
-  InputErrorMsg,
-  Switch,
-  Textarea,
-} from "components/ui";
+import { Button, Card, Input, InputErrorMsg, Switch } from "components/ui";
 import { DatePicker } from "components/shared/form/Datepicker";
 import {
   CheckCircleIcon,
@@ -169,19 +158,38 @@ const AddEventSidebarForm = ({ close }) => {
     },
   };
 
+  const minuteIncrement = 15;
+
+  const now = new Date(); // Get current time
+
+  let currentMinutes = now.getMinutes();
+  let nextInterval =
+    Math.ceil(currentMinutes / minuteIncrement) * minuteIncrement;
+
+  // Handle case where nextInterval is 60 (roll over to next hour)
+  if (nextInterval === 60) {
+    now.setHours(now.getHours() + 1);
+    nextInterval = 0;
+  }
+
+  const start = new Date();
+  start.setMinutes(nextInterval, 0, 0);
+  const end = new Date(start.getTime() + minuteIncrement * 60 * 1000);
+
   const initialState = {
     id: "11",
     url: "",
     title: "",
-    start: new Date(),
-    end: new Date(),
+    start,
+    end,
     allDay: false,
-    doctor: {
-      uid: "1",
-      name: "John Doe",
-      avatar: null,
-    },
-    patient: {},
+    doctor: null,
+    // {
+    //   uid: "1",
+    //   name: "John Doe",
+    //   avatar: null,
+    // },
+    patient: null,
     status: extendedProps?.status || "confirmed",
     type: extendedProps?.type || "control",
     content: new Delta(),
@@ -197,14 +205,10 @@ const AddEventSidebarForm = ({ close }) => {
     watch,
     setValue,
   } = useForm({
-    resolver: yupResolver(schema),
+    // resolver: yupResolver(schema),
     defaultValues: initialState,
-    mode: "onTouched",
+    mode: "onTouched", //onChange
   });
-
-  console.log("filterEvents");
-  console.log(initialState);
-  console.log(selectedEvent);
 
   useEffect(() => {
     setFocus("name");
@@ -214,22 +218,20 @@ const AddEventSidebarForm = ({ close }) => {
     console.log("data");
     console.log(data);
 
-    toast("New Post Published. Now you can add new one", {
+    toast("New Event Published. Now you can add new one", {
       invert: true,
     });
 
-    return;
+    if (!selectedEvent) {
+      addEvent(data);
+    } else {
+      updateEvent(data, { id: initialState.id });
+    }
 
-    // if (!selectedEvent) {
-    //   addEvent(data);
-    // } else {
-    //   updateEvent(data, { id: initialState.id });
-    // }
+    filterEvents();
 
-    // //filterEvents();
-
-    // // reset();
-    // close();
+    //reset();
+    close();
   };
 
   useEffect(() => {
@@ -259,10 +261,12 @@ const AddEventSidebarForm = ({ close }) => {
     setConfirmLoading(true);
     new Promise((resolve, reject) =>
       setTimeout(() => {
-        Math.random() > 0.5 ? resolve() : reject();
+        resolve(); //Math.random() > 0.5 ? resolve() : reject();
       }, 5000),
     )
       .then(() => {
+        setConfirmLoading(false);
+        setError(false);
         setSuccess(true);
 
         if (pendingData === "canceled") {
@@ -273,16 +277,18 @@ const AddEventSidebarForm = ({ close }) => {
         }
       })
       .catch(() => {
+        setConfirmLoading(false);
+        setSuccess(false);
         setError(true);
       })
       .finally(() => {
-        console.log("finally");
-
-        setConfirmLoading(false);
-        setSuccess(false);
-        setError(false);
+        // setConfirmLoading(false);
+        // setSuccess(false);
+        // setError(false);
       });
   };
+
+  console.log(errors);
 
   return (
     <>
@@ -339,6 +345,7 @@ const AddEventSidebarForm = ({ close }) => {
                   />
                 )}
                 control={control}
+                {...register("patient")}
                 name="patient"
               />
             </div>
@@ -405,7 +412,9 @@ const AddEventSidebarForm = ({ close }) => {
                   <RadioField
                     error={errors?.status?.message}
                     options={statusOptions}
-                    onChange={onChange}
+                    onChange={(val) =>
+                      handleStatusChange(onChange)({ value: val })
+                    }
                     value={value}
                     name={name}
                   />
@@ -472,7 +481,7 @@ const AddEventSidebarForm = ({ close }) => {
                     value={new Date(value)}
                     onChange={(_, dateStr) => onChange(dateStr)}
                     options={{
-                      dateFormat: "Y-m-d",
+                      dateFormat: "Y-m-d H:i",
                       enableTime: true,
                     }}
                   />
@@ -572,12 +581,13 @@ const AddEventSidebarForm = ({ close }) => {
           </div>
         </div>
       </form>
-
       <ConfirmModal
         show={isOpen}
         onClose={() => {
           setPendingData(null);
           Mclose();
+          setSuccess(false);
+          setError(false);
         }}
         messages={messages}
         onOk={handleConfirm}

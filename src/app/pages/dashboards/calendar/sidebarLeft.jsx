@@ -207,11 +207,11 @@ const SidebarLeft = (props) => {
                   isCalendar
                   label="start date:"
                   placeholder="Choose start date..."
-                  onChange={(_, dateStr, _2) => {
-                    flatPickerChange(_, dateStr, _2);
+                  onChange={(_, dateStr) => {
+                    //flatPickerChange(_, dateStr, _2);
                     // console.log("dateStr");
                     // console.log(dateStr);
-                    // calendarApi.gotoDate(dateStr);
+                    calendarApi.gotoDate(dateStr);
                   }}
                   options={{
                     // dateFormat: "Y-m-d G:00 K",

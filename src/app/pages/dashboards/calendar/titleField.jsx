@@ -6,7 +6,7 @@ import PropTypes from "prop-types";
 import { Textarea } from "components/ui";
 
 // ----------------------------------------------------------------------
-
+ 
 export function TitleField({ register, error, listName }) {
   return (
     <Textarea

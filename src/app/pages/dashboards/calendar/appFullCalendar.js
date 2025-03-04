@@ -665,14 +665,14 @@ const AppFullCalendar = styled("div")(() => {
 
       // Media Queries
 
-      "@media (min-width: 768px)": {
-        "& .fc-sidebarToggle-button": {
-          display: "none",
-        },
-        "& .fc-toolbar-title": {
-          marginLeft: 0,
-        },
-      },
+      // "@media (min-width: 768px)": {
+      //   "& .fc-sidebarToggle-button": {
+      //     display: "none",
+      //   },
+      //   "& .fc-toolbar-title": {
+      //     marginLeft: 0,
+      //   },
+      // },
     },
   };
 });

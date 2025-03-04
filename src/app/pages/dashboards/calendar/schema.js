@@ -7,7 +7,11 @@ import { isDeltaNotEmpty } from "utils/quillUtils";
 
 // ----------------------------------------------------------------------
 
-const now = new Date();
+// Helper function to check if a date is in the future
+const isFutureDate = (value) => {
+  if (!value) return false;
+  return new Date(value) >= new Date(); // Dynamically check against the current time
+};
 
 export const schema = Yup.object().shape({
   // id: Yup.string().required("ID is required"),
@@ -19,10 +23,7 @@ export const schema = Yup.object().shape({
 
   start: Yup.date()
     .required("Start date is required")
-    .test("is-future-or-now", "Start time must be in the future", (value) => {
-      if (!value) return false;
-      return new Date(value) >= now; // Ensures the selected datetime is not in the past
-    }),
+    .test("is-future-or-now", "Start time must be in the future", isFutureDate),
 
   end: Yup.date()
     .required("End date is required")
