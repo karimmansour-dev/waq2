@@ -190,6 +190,11 @@ const AddEventSidebarForm = ({ close }) => {
     //   avatar: null,
     // },
     patient: null,
+     // {
+    //   uid: "1",
+    //   name: "John Doe",
+    //   avatar: null,
+    // },
     status: extendedProps?.status || "confirmed",
     type: extendedProps?.type || "control",
     content: new Delta(),
