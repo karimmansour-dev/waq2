@@ -35,6 +35,13 @@ import SimpleBar from "simplebar-react";
 import useCalendarStore from "./store";
 import { ConfirmModal } from "components/shared/ConfirmModal";
 import { useDisclosure } from "hooks";
+import {
+  minuteIncrement,
+  statusOptions,
+  typeOptions,
+} from "constants/calendar.constant";
+import { calculateStartAndEndTimes } from "utils/calculateStartAndEndTimes";
+import { adjustFlatpickrMinutes } from "utils/adjustFlatpickrMinutes";
 
 // ----------------------------------------------------------------------
 
@@ -58,20 +65,6 @@ const editorModules = {
     matchVisual: false,
   },
 };
-
-const statusOptions = [
-  { value: "confirmed", label: "Confirmed", color: "success" },
-  { value: "pending", label: "Pending", color: "info" },
-  { value: "canceled", label: "Canceled", color: "warning" },
-  { value: "postponed", label: "Postponed", color: "error" },
-];
-
-const typeOptions = [
-  { value: "consultation", label: "Consultation", color: "primary" },
-  { value: "control", label: "Control", color: "secondary" },
-  { value: "emergency", label: "Emergency", color: "warning" },
-  { value: "etc", label: "Other", color: "info" },
-];
 
 const AddEventSidebar = ({ addEventOpen, handleAddEventToggle }) => {
   return (
@@ -158,26 +151,9 @@ const AddEventSidebarForm = ({ close }) => {
     },
   };
 
-  const minuteIncrement = 15;
-
-  const now = new Date(); // Get current time
-
-  let currentMinutes = now.getMinutes();
-  let nextInterval =
-    Math.ceil(currentMinutes / minuteIncrement) * minuteIncrement;
-
-  // Handle case where nextInterval is 60 (roll over to next hour)
-  if (nextInterval === 60) {
-    now.setHours(now.getHours() + 1);
-    nextInterval = 0;
-  }
-
-  const start = new Date();
-  start.setMinutes(nextInterval, 0, 0);
-  const end = new Date(start.getTime() + minuteIncrement * 60 * 1000);
+  const { start, end } = calculateStartAndEndTimes(new Date(), minuteIncrement);
 
   const initialState = {
-    id: "11",
     url: "",
     title: "",
     start,
@@ -190,7 +166,7 @@ const AddEventSidebarForm = ({ close }) => {
     //   avatar: null,
     // },
     patient: null,
-     // {
+    // {
     //   uid: "1",
     //   name: "John Doe",
     //   avatar: null,
@@ -463,7 +439,6 @@ const AddEventSidebarForm = ({ close }) => {
                     onChange={(_, dateStr) => onChange(dateStr)}
                     options={{
                       dateFormat: "Y-m-d H:i",
-                      enableTime: true,
                     }}
                   />
                 )}
@@ -484,10 +459,15 @@ const AddEventSidebarForm = ({ close }) => {
                     placeholder="Choose end date..."
                     name={name}
                     value={new Date(value)}
-                    onChange={(_, dateStr) => onChange(dateStr)}
+                    onChange={(_, dateStr, instance) => {
+                      adjustFlatpickrMinutes(_, dateStr, instance);
+                      //onChange(dateStr)
+                    }}
                     options={{
                       dateFormat: "Y-m-d H:i",
                       enableTime: true,
+                      noCalendar: true,
+                      minuteIncrement,
                     }}
                   />
                 )}
@@ -581,7 +561,7 @@ const AddEventSidebarForm = ({ close }) => {
               className="min-w-[8rem]"
               disabled={!isValid}
             >
-              Update Evant
+              {initialState?.id ? "Update Evant" : "add"}
             </Button>
           </div>
         </div>

@@ -9,22 +9,18 @@ import { ChartBarIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { CalendarConfig } from "./calendarConfig";
 import PropTypes from "prop-types";
 import useCalendarStore from "./store";
+import { statusOptions } from "constants/calendar.constant";
 
-// ----------------------------------------------------------------------
-
-const statusOptions = [
-  { value: "confirmed", label: "Confirmed", color: "success", icon: ClockIcon },
-  { value: "pending", label: "Pending", color: "info", icon: ClockIcon },
-  { value: "canceled", label: "Canceled", color: "warning", icon: ClockIcon },
-  { value: "postponed", label: "Postponed", color: "error", icon: ClockIcon },
-];
+// ---------------------------------------------------------------------- 
 
 export function CalendarHeader({ isFullScreen, setIsFullScreen }) {
   // const [globalFilter, setGlobalFilter] = useState("");
   const {
     selectedStatuses,
+    selectedEventViews,
     filterStatusLabel,
     // filterAllStatusLabels,
+    filterEventViewLabel,
     globalFilter,
     setGlobalFilter,
   } = useCalendarStore();
@@ -69,6 +65,9 @@ export function CalendarHeader({ isFullScreen, setIsFullScreen }) {
           <CalendarConfig
             isFullScreen={isFullScreen}
             setIsFullScreen={setIsFullScreen}
+            onChange={(lable) => {
+              filterEventViewLabel(lable)
+            }}
           />
         </div>
       </div>

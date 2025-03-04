@@ -19,13 +19,8 @@ import { useIsomorphicEffect } from "hooks";
 import { useLocaleContext } from "app/contexts/locale/context";
 import dayjs from "dayjs";
 import "dayjs/locale/ar"; // Import Arabic locale
-
-const typeOptions = [
-  { value: "consultation", label: "Consultation", color: "primary" },
-  { value: "control", label: "Control", color: "secondary" },
-  { value: "emergency", label: "Emergency", color: "warning" },
-  { value: "etc", label: "Other", color: "info" },
-];
+import { minuteIncrement, typeOptions } from "constants/calendar.constant";
+import { adjustFlatpickrMinutes } from "utils/adjustFlatpickrMinutes";
 
 const SidebarLeft = (props) => {
   // Props
@@ -95,59 +90,6 @@ const SidebarLeft = (props) => {
     handleAddEventToggle();
   };
 
-  function flatPickerChange(selectedDates, dateString, flatpickrInstance) {
-    const minuteIncrement = flatpickrInstance.config.minuteIncrement;
-
-    if (minuteIncrement && minuteIncrement > 0) {
-      const selectedMinutes = Number(flatpickrInstance.minuteElement.value);
-
-      // Ensure selectedMinutes is a valid number
-      if (isNaN(selectedMinutes)) return; // Should never happen
-
-      console.log("selectedMinutes");
-      console.log(selectedMinutes);
-
-      console.log("minuteIncrement");
-      console.log(minuteIncrement);
-
-      const remainder = selectedMinutes % minuteIncrement;
-      console.log("remainder");
-      console.log(remainder);
-
-      // Do nothing if the selected minutes already align with the increment
-      if (remainder === 0) return;
-
-      // Calculate the quotient for the nearest increment
-      let quotient = Math.floor(selectedMinutes / minuteIncrement);
-      console.log("quotient");
-      console.log(quotient);
-
-      console.log("quotient");
-      console.log(quotient);
-
-      console.log("remainder / minuteIncrement");
-      console.log(remainder / minuteIncrement);
-
-      console.log("quotient * minuteIncrement");
-      console.log(quotient * minuteIncrement);
-      console.log((quotient + 1) * minuteIncrement);
-      // Round up to the nearest increment if the remainder is more than half of the increment
-      if (remainder / minuteIncrement > 0.5) {
-        quotient++;
-      }
-
-      // Update the minutes to the nearest increment
-      flatpickrInstance.minuteElement.value = quotient * minuteIncrement;
-
-      // Set the date with the updated minutes
-      flatpickrInstance.setDate(
-        flatpickrInstance
-          .parseDate(dateString)
-          .setMinutes(flatpickrInstance.minuteElement.value),
-      );
-    }
-  }
-
   const Sidebar = () => {
     return (
       <Transition appear show={leftSidebarOpen} as="div">
@@ -207,8 +149,8 @@ const SidebarLeft = (props) => {
                   isCalendar
                   label="start date:"
                   placeholder="Choose start date..."
-                  onChange={(_, dateStr) => {
-                    //flatPickerChange(_, dateStr, _2);
+                  onChange={(_, dateStr, instance) => {
+                    adjustFlatpickrMinutes(_, dateStr, instance);
                     // console.log("dateStr");
                     // console.log(dateStr);
                     calendarApi.gotoDate(dateStr);
@@ -216,14 +158,14 @@ const SidebarLeft = (props) => {
                   options={{
                     // dateFormat: "Y-m-d G:00 K",
                     dateFormat: "Y-m-d H:i",
-                    minuteIncrement: 15,
+                    minuteIncrement,
                     // time_24hr: true,
                     // minTime: "16:00",
                     // maxTime: "22:30",
                     // defaultDate: new Date(),
                     // weekNumbers: true,
                     // noCalendar: true,
-                    enableTime: true,
+                    // enableTime: true,
                     // minDate: "today",
                     //maxDate: new Date().fp_incr(14)
                     // locale: { firstDayOfWeek: 1 },

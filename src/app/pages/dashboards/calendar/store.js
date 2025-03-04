@@ -1,12 +1,18 @@
 import { create } from "zustand";
 import { events } from "./events";
+import {
+  selectedEventViews,
+  selectedStatuses,
+  selectedTypes,
+} from "constants/calendar.constant";
 
 const useCalendarStore = create((set, get) => ({
   events: events,
   filteredEvents: events,
   selectedEvent: null,
-  selectedTypes: ["consultation", "emergency", "control", "etc"],
-  selectedStatuses: ["confirmed", "pending", "canceled", "postponed"],
+  selectedEventViews,
+  selectedTypes,
+  selectedStatuses,
   globalFilter: "",
 
   // Helper function to filter events based on selected calendars and statuses
@@ -104,6 +110,24 @@ const useCalendarStore = create((set, get) => ({
           updatedStatuses,
           state.globalFilter,
         ),
+      };
+    });
+  },
+
+  filterEventViewLabel: (label) => {
+    set((state) => {
+      const index = state.selectedEventViews.indexOf(label);
+      let updatedEventViews;
+
+      if (index !== -1) {
+        updatedEventViews = [...state.selectedEventViews];
+        updatedEventViews.splice(index, 1);
+      } else {
+        updatedEventViews = [...state.selectedEventViews, label];
+      }
+
+      return {
+        selectedEventViews: updatedEventViews,
       };
     });
   },

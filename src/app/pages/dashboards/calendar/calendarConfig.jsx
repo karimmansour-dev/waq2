@@ -9,7 +9,7 @@ import PropTypes from "prop-types";
 
 // ----------------------------------------------------------------------
 
-export function CalendarConfig({ isFullScreen, setIsFullScreen }) {
+export function CalendarConfig({ isFullScreen, setIsFullScreen, onChange }) {
   const { smAndDown } = useBreakpointsContext();
 
   return (
@@ -41,6 +41,7 @@ export function CalendarConfig({ isFullScreen, setIsFullScreen }) {
         <EvantSettings
           isFullScreen={isFullScreen}
           setIsFullScreen={setIsFullScreen}
+          onChange={onChange}
         />
       </div>
     </ResponsiveFilter>
@@ -50,4 +51,5 @@ export function CalendarConfig({ isFullScreen, setIsFullScreen }) {
 CalendarConfig.propTypes = {
   isFullScreen: PropTypes.bool,
   setIsFullScreen: PropTypes.func,
+  onChange: PropTypes.func,
 };
