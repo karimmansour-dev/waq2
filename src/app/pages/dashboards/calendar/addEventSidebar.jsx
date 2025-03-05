@@ -11,12 +11,13 @@ import {
   Dialog,
   DialogPanel,
   DialogTitle,
+  Label,
   Transition,
   TransitionChild,
 } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { Delta, TextEditor } from "components/shared/form/TextEditor";
-import { Button, Card, Input, InputErrorMsg, Switch } from "components/ui";
+import { Button, Card, Input, InputErrorMsg, Switch, Tag } from "components/ui";
 import { DatePicker } from "components/shared/form/Datepicker";
 import {
   CheckCircleIcon,
@@ -36,12 +37,19 @@ import useCalendarStore from "./store";
 import { ConfirmModal } from "components/shared/ConfirmModal";
 import { useDisclosure } from "hooks";
 import {
+  allowSaturday,
+  allowSunday,
+  closingTime,
   minuteIncrement,
+  openingTime,
   statusOptions,
+  dayPartsOptions,
   typeOptions,
 } from "constants/calendar.constant";
 import { calculateStartAndEndTimes } from "utils/calculateStartAndEndTimes";
 import { adjustFlatpickrMinutes } from "utils/adjustFlatpickrMinutes";
+import { TimeRadioField } from "./timeRadioField";
+import generateTimeSlots from "utils/generateTimeSlots";
 
 // ----------------------------------------------------------------------
 
@@ -152,6 +160,14 @@ const AddEventSidebarForm = ({ close }) => {
   };
 
   const { start, end } = calculateStartAndEndTimes(new Date(), minuteIncrement);
+  const timeSlotsOptions = generateTimeSlots(
+    new Date(),
+    openingTime,
+    closingTime,
+    minuteIncrement,
+    allowSaturday,
+    allowSunday,
+  );
 
   const initialState = {
     url: "",
@@ -171,6 +187,10 @@ const AddEventSidebarForm = ({ close }) => {
     //   name: "John Doe",
     //   avatar: null,
     // },
+    timeSlot: "2025-03-05T17:00:00.000Z",
+    oldOrder: 20,
+    order: 22,
+    dayPart: "afternoon",
     status: extendedProps?.status || "confirmed",
     type: extendedProps?.type || "control",
     content: new Delta(),
@@ -182,13 +202,27 @@ const AddEventSidebarForm = ({ close }) => {
     formState: { errors, isValid },
     control,
     reset,
+    values,
+    getValues,
     setFocus,
     watch,
     setValue,
   } = useForm({
     // resolver: yupResolver(schema),
     defaultValues: initialState,
-    mode: "onTouched", //onChange
+    mode: "onChange", //onTouched
+    resolver: (values, context, options) => {
+      console.log("values: ", values);
+
+      // console.log("allDay");
+      // console.log(values.allDay);
+
+      // you can return the schema based on context.
+      // for my use case, I can depend on formValues
+      // const isSomeCondition = values.someValue === someValue;
+      const createResolver = yupResolver(schema);
+      return createResolver(values, context, options);
+    },
   });
 
   useEffect(() => {
@@ -217,7 +251,7 @@ const AddEventSidebarForm = ({ close }) => {
 
   useEffect(() => {
     const { unsubscribe } = watch((value) => {
-      console.log(value);
+      console.log("watch: ", value);
     });
     return () => unsubscribe();
   }, [watch]);
@@ -269,7 +303,7 @@ const AddEventSidebarForm = ({ close }) => {
       });
   };
 
-  console.log(errors);
+  console.log("errors: ", errors);
 
   return (
     <>
@@ -304,37 +338,36 @@ const AddEventSidebarForm = ({ close }) => {
           <div className="flex-1">
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-2">
               <Controller
+                control={control}
+                name="doctor"
                 render={({ field: { onChange, value, name } }) => (
                   <AssignsField
                     onChange={onChange}
                     value={value}
                     name={name}
-                    error={errors?.status?.message}
+                    error={errors?.doctor?.message}
                   />
                 )}
-                control={control}
-                name="doctor"
               />
 
               <Controller
+                control={control}
+                name="patient"
                 render={({ field: { onChange, value, name } }) => (
                   <AssignsField
                     onChange={onChange}
                     value={value}
                     name={name}
-                    error={errors?.status?.message}
+                    error={errors?.patient?.message}
                   />
                 )}
-                control={control}
-                {...register("patient")}
-                name="patient"
               />
             </div>
           </div>
         </div>
 
         {/* Combobox */}
-        <div className="mt-5 flex gap-3">
+        {/* <div className="mt-5 flex gap-3">
           <div className="pt-0.5">
             <InformationCircleIcon className="size-6" />
           </div>
@@ -377,7 +410,7 @@ const AddEventSidebarForm = ({ close }) => {
               />
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* RadioGroup */}
         <div className="mt-5 flex gap-3">
@@ -385,36 +418,47 @@ const AddEventSidebarForm = ({ close }) => {
             <InformationCircleIcon className="size-6" />
           </div>
           <div className="flex-1">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-1">
-              <Controller
-                control={control}
-                name="status"
-                render={({ field: { onChange, value, name } }) => (
-                  <RadioField
-                    error={errors?.status?.message}
-                    options={statusOptions}
-                    onChange={(val) =>
-                      handleStatusChange(onChange)({ value: val })
-                    }
-                    value={value}
-                    name={name}
-                  />
-                )}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-y-3">
+                <label>Status: </label>
+                <Controller
+                  control={control}
+                  name="status"
+                  render={({ field: { onChange, value, name } }) => (
+                    <RadioField
+                      options={statusOptions}
+                      onChange={(val) =>
+                        handleStatusChange(onChange)({ value: val })
+                      }
+                      value={value}
+                      name={name}
+                    />
+                  )}
+                />
+                <InputErrorMsg when={errors?.status?.message}>
+                  {errors?.status?.message}
+                </InputErrorMsg>
+              </div>
 
-              <Controller
-                control={control}
-                name="type"
-                render={({ field: { onChange, value, name } }) => (
-                  <RadioField
-                    error={errors?.type?.message}
-                    options={typeOptions}
-                    onChange={onChange}
-                    value={value}
-                    name={name}
-                  />
-                )}
-              />
+              <div className="flex flex-col gap-y-3">
+                <label>type: </label>
+                <Controller
+                  control={control}
+                  name="type"
+                  render={({ field: { onChange, value, name } }) => (
+                    <RadioField
+                      options={typeOptions}
+                      onChange={onChange}
+                      value={value}
+                      name={name}
+                    />
+                  )}
+                />
+
+                <InputErrorMsg when={errors?.type?.message}>
+                  {errors?.type?.message}
+                </InputErrorMsg>
+              </div>
             </div>
           </div>
         </div>
@@ -428,8 +472,9 @@ const AddEventSidebarForm = ({ close }) => {
             {/* Start Date */}
 
             <div className="flex flex-col gap-y-3">
-              {" "}
               <Controller
+                control={control}
+                name="start"
                 render={({ field: { onChange, value, name } }) => (
                   <DatePicker
                     label="start date:"
@@ -437,13 +482,11 @@ const AddEventSidebarForm = ({ close }) => {
                     name={name}
                     value={new Date(value)}
                     onChange={(_, dateStr) => onChange(dateStr)}
-                    options={{
-                      dateFormat: "Y-m-d H:i",
-                    }}
+                    // options={{
+                    //   dateFormat: "Y-m-d",
+                    // }}
                   />
                 )}
-                control={control}
-                name="start"
               />
               <InputErrorMsg when={errors?.start?.message}>
                 {errors?.start?.message}
@@ -460,13 +503,13 @@ const AddEventSidebarForm = ({ close }) => {
                     name={name}
                     value={new Date(value)}
                     onChange={(_, dateStr, instance) => {
-                      adjustFlatpickrMinutes(_, dateStr, instance);
-                      //onChange(dateStr)
+                      // adjustFlatpickrMinutes(_, dateStr, instance);
+                      onChange(dateStr);
                     }}
                     options={{
                       dateFormat: "Y-m-d H:i",
                       enableTime: true,
-                      noCalendar: true,
+                      // noCalendar: true,
                       minuteIncrement,
                     }}
                   />
@@ -479,8 +522,15 @@ const AddEventSidebarForm = ({ close }) => {
                 {errors?.end?.message}
               </InputErrorMsg>
             </div>
+          </div>
+        </div>
 
-            {/* All Day */}
+        {/* All Day */}
+        <div className="mt-5 flex gap-3">
+          <div className="pt-0.5">
+            <LinkIcon className="size-6" />
+          </div>
+          <div className="flex-1">
             <Controller
               control={control}
               error={errors?.allDay?.message}
@@ -497,20 +547,113 @@ const AddEventSidebarForm = ({ close }) => {
           </div>
         </div>
 
-        {/* URL */}
-        <div className="mt-5 flex gap-3">
-          <div className="pt-0.5">
-            <LinkIcon className="size-6" />
+        {/* timeSlot */}
+        {!watch("allDay") && (
+          <div className="mt-5 flex gap-3">
+            <div className="pt-0.5">
+              <LinkIcon className="size-6" />
+            </div>
+            <div className="flex-1">
+              <Controller
+                control={control}
+                name="timeSlot"
+                render={({ field: { onChange, value, name } }) => (
+                  <TimeRadioField
+                    error={errors?.status?.timeSlot}
+                    options={timeSlotsOptions}
+                    onChange={onChange}
+                    value={value}
+                    name={name}
+                  />
+                )}
+              />
+            </div>
           </div>
-          <div className="flex-1">
-            <Input
-              {...register("url")}
-              label="URL"
-              error={errors?.url?.message}
-              placeholder="Enter URL"
-            />
-          </div>
-        </div>
+        )}
+
+        {/* day Part and order */}
+        {watch("allDay") && (
+          <>
+            <div className="mt-5 flex gap-3">
+              <div className="pt-0.5">
+                <LinkIcon className="size-6" />
+              </div>
+              <div className="flex-1">
+                <label>day Part :</label>
+                <Controller
+                  control={control}
+                  name="dayPart"
+                  render={({ field: { onChange, value, name } }) => (
+                    <RadioField
+                      options={dayPartsOptions}
+                      onChange={onChange}
+                      value={value}
+                      name={name}
+                    />
+                  )}
+                />
+
+                <InputErrorMsg when={errors?.dayPart?.message}>
+                  {errors?.end?.message}
+                </InputErrorMsg>
+              </div>
+            </div>
+
+            <div className="mt-5 flex gap-3">
+              <div className="pt-0.5">
+                <LinkIcon className="size-6" />
+              </div>
+              <div className="flex-1">
+                <div className="flex h-14 items-center justify-between space-x-3 py-3 rtl:space-x-reverse">
+                  <h2 className="truncate font-medium tracking-wide text-gray-800 dark:text-dark-100 lg:text-base">
+                    {"Order"}
+                  </h2>
+                </div>
+
+                <div className="max-w-2xl">
+                  The order component is used to separate long sets of data so
+                  that it is easier for a user to consume information. Depending
+                  on the length provided, the pagination component will
+                  automatically scale.
+                  <div className="inline-flex space-x-2 pl-2">
+                    <div className="inline-flex">
+                      <Tag
+                        href="#"
+                        className="ltr:rounded-r-none rtl:rounded-l-none"
+                      >
+                        already
+                      </Tag>
+                      <Tag
+                        href="#"
+                        color="primary"
+                        className="ltr:rounded-l-none rtl:rounded-r-none"
+                      >
+                        {getValues("order")}
+                      </Tag>
+                    </div>
+
+                    <div className="flex flex-col">
+                      <Input
+                        className="w-full"
+                        type="number"
+                        {...register("order", { valueAsNumber: true })}
+                        error={errors?.order?.message}
+                        classNames={{
+                          root: "flex flex-row items-center gap-x-4",
+                        }}
+                        placeholder="Enter order"
+                      />
+                      <input
+                        type="hidden"
+                        {...register("oldOrder", { valueAsNumber: true })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Content */}
         <div className="mt-5 flex gap-3">

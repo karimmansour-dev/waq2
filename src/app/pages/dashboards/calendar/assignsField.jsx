@@ -100,7 +100,7 @@ export function AssignsField({ onChange, value, name, error }) {
   };
 
   return (
-    <Combobox value={value || null} onChange={onChange}>
+    <Combobox value={value || null} onChange={onChange} name={name}>
       {({ open }) => (
         <div className="relative">
           <Label>{`${name[0].toUpperCase()}${name.substr(1)}`}:</Label>

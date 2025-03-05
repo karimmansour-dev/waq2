@@ -9,17 +9,16 @@ import { Checkbox } from "components/ui";
 
 // ----------------------------------------------------------------------
 
-export function RadioField({ name, value, onChange, error, options }) {
+export function RadioField({ name, value, onChange, options }) {
   return (
     <RadioGroup
       name={name}
       value={value}
       onChange={onChange}
-      error={error}
-      className="mt-2 flex w-full gap-3"
+      className="mt-2 flex w-full flex-col gap-3 pl-5"
     >
       {options.map((option) => (
-        <Field key={option.value} className="flex w-full gap-3">
+        <Field key={option.value} className="flex w-full items-center gap-2">
           <Radio
             value={option.value}
             as={Checkbox}
@@ -46,6 +45,5 @@ RadioField.propTypes = {
   onChange: PropTypes.func,
   options: PropTypes.array,
   value: PropTypes.array,
-  error: PropTypes.string,
   name: PropTypes.string,
 };

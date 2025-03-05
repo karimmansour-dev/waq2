@@ -3,12 +3,14 @@ const statusOptions = [
   { value: "pending", label: "Pending", color: "info" },
   { value: "canceled", label: "Canceled", color: "warning" },
   { value: "postponed", label: "Postponed", color: "error" },
+  { value: "mm", label: "mm", color: "error" },
 ];
 const typeOptions = [
   { value: "consultation", label: "Consultation", color: "primary" },
   { value: "control", label: "Control", color: "secondary" },
   { value: "emergency", label: "Emergency", color: "warning" },
   { value: "etc", label: "Other", color: "info" },
+  { value: "pp", label: "pp", color: "info" },
 ];
 
 const blankEvent = {
@@ -36,6 +38,18 @@ const detailEvents = [
   { label: "stateIndicators", checked: true, isHidden: false },
 ];
 
+const dayPartsOptions = [
+  { label: "Morning", value: "morning", color: "primary" },
+  { label: "Afternoon", value: "afternoon", color: "info" },
+  { label: "Evening", value: "evening", color: "warning" },
+  { label: "mm", value: "mm", color: "warning" },
+];
+
+const isFlexibleSchedule = true;
+const allowSunday = true;
+const allowSaturday = true;
+const openingTime = "09:00";
+const closingTime = "22:00";
 const minuteIncrement = 15;
 
 // Extract selectedEventViews
@@ -58,4 +72,10 @@ export {
   selectedEventViews,
   selectedTypes,
   selectedStatuses,
+  isFlexibleSchedule,
+  dayPartsOptions,
+  openingTime,
+  closingTime,
+  allowSaturday,
+  allowSunday,
 };

@@ -29,7 +29,9 @@ export const schema = Yup.object().shape({
     .required("End date is required")
     .min(Yup.ref("start"), "End date cannot be before start date"),
 
-  allDay: Yup.boolean().required("All day status is required"),
+  timeSlot: Yup.date()
+    .required("Time Slot is required")
+    .min(Yup.ref("start"), "Time Slot cannot be before start date"),
 
   doctor: Yup.object()
     .shape({
@@ -61,7 +63,20 @@ export const schema = Yup.object().shape({
     )
     .required("Type is required"),
 
-  url: Yup.string().url("Invalid URL").nullable(),
+  dayPart: Yup.string()
+    .oneOf(
+      ["morning", "afternoon", "evening"],
+      "Type must be one of morning, afternoon or evening",
+    )
+    .required("DayPart is required"),
+
+  allDay: Yup.boolean().required("All day status is required"),
+
+  oldOrder: Yup.number().required("OldOrder is required"),
+
+  order: Yup.number()
+    .required("Order is required")
+    .min(Yup.ref("oldOrder"), "Order cannot be less than Old Order"),
 
   content: Yup.object().nullable(),
   // .required("Content is required")

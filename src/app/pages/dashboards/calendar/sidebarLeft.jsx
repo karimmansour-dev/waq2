@@ -149,16 +149,17 @@ const SidebarLeft = (props) => {
                   isCalendar
                   label="start date:"
                   placeholder="Choose start date..."
-                  onChange={(_, dateStr, instance) => {
-                    adjustFlatpickrMinutes(_, dateStr, instance);
+                  onChange={(_, dateStr) => {
                     // console.log("dateStr");
                     // console.log(dateStr);
+                    console.log(dateStr);
+
                     calendarApi.gotoDate(dateStr);
                   }}
                   options={{
                     // dateFormat: "Y-m-d G:00 K",
-                    dateFormat: "Y-m-d H:i",
-                    minuteIncrement,
+                    // dateFormat: "Y-m-d H:i",
+                    // minuteIncrement,
                     // time_24hr: true,
                     // minTime: "16:00",
                     // maxTime: "22:30",

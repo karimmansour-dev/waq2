@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 // React Imports
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Popover,
   PopoverButton,
@@ -89,8 +89,23 @@ const Calendar = (props) => {
     return ContextualHelper(eventInfo, selectedEventViews);
   }
 
-  const date = new Date();
-  const nextDay = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+  // const date = new Date();
+  // const nextDay = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+
+  useEffect(() => {
+    if (calendarApi) {
+      // Schedule updates as a microtask
+      queueMicrotask(() => {
+        // Remove all existing events
+        calendarApi.getEvents().forEach((event) => event.remove());
+
+        // Add updated events
+        events.forEach((event) => {
+          calendarApi.addEvent(event);
+        });
+      });
+    }
+  }, [selectedEventViews, calendarApi, events]);
 
   const calendarOptions = {
     events: events,
@@ -217,8 +232,10 @@ const Calendar = (props) => {
         minuteIncrement,
       );
 
+      console.log(start, end);
+
       // Update event with correct time
-      info.event.setProp("allDay", false); // Ensure it's not an all-day event
+      //info.event.setProp("allDay", false); // Ensure it's not an all-day event
       info.event.setStart(start);
       info.event.setEnd(end);
 
