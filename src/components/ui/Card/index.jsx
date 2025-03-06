@@ -20,7 +20,7 @@ const Card = forwardRef((props, ref) => {
       className={clsx(
         "card rounded-lg",
         skin &&
-          skin !== "none" && [
+          skin !== "none" && [ 
             skin === "bordered" &&
               "border border-gray-200 dark:border-dark-600 print:border-0",
             skin === "shadow" &&

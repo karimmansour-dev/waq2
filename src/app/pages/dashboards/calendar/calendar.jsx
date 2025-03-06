@@ -19,7 +19,7 @@ import { defaultTheme } from "configs/theme.config";
 import i18n from "i18n/config";
 import clsx from "clsx";
 import { setThisClass } from "utils/setThisClass";
-import { Button, Tag } from "components/ui";
+import { Avatar, Button, Card, Tag } from "components/ui";
 import { useLocaleContext } from "app/contexts/locale/context";
 import { locales } from "i18n/langs";
 import dayjs from "dayjs";
@@ -35,14 +35,11 @@ import ContextualHelper from "./ContextualHelper";
 import { calculateStartAndEndTimes } from "utils/calculateStartAndEndTimes";
 import renderEventDidMount from "utils/renderEventDidMount";
 
-// dayjs.extend(relativeTime);
-
 const Calendar = (props) => {
-  // Props
+  // Propsd
   const {
     calendarApi,
     setCalendarApi,
-    // calendarsColor,
     leftSidebarOpen,
     handleAddEventToggle,
     handleLeftSidebarToggle,
@@ -89,51 +86,24 @@ const Calendar = (props) => {
     return ContextualHelper(eventInfo, selectedEventViews);
   }
 
-  // const date = new Date();
-  // const nextDay = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+  // useEffect(() => {
+  //   if (calendarApi) {
+  //     // Schedule updates as a microtask
+  //     queueMicrotask(() => {
+  //       // Remove all existing events
+  //       calendarApi.getEvents().forEach((event) => event.remove());
 
-  useEffect(() => {
-    if (calendarApi) {
-      // Schedule updates as a microtask
-      queueMicrotask(() => {
-        // Remove all existing events
-        calendarApi.getEvents().forEach((event) => event.remove());
-
-        // Add updated events
-        events.forEach((event) => {
-          calendarApi.addEvent(event);
-        });
-      });
-    }
-  }, [selectedEventViews, calendarApi, events]);
+  //       // Add updated events
+  //       events.forEach((event) => {
+  //         calendarApi.addEvent(event);
+  //       });
+  //     });
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [selectedEventViews]);
 
   const calendarOptions = {
-    events: events,
-    // [
-    //   {
-    //     id: "11",
-    //     title: "Appointment",
-    //     start: date,
-    //     end: nextDay,
-    //     allDay: false,
-
-    //     extendedProps: {
-    //       type: "control",
-    //       status: "confirmed",
-    //       // doctor: {
-    //       //   uid: "1",
-    //       //   name: "Dr. John Doe",
-    //       //   avatar: "https://example.com/avatar.jpg",
-    //       // },
-    //       // patient: {
-    //       //   uid: "2",
-    //       //   name: "Jane Smith",
-    //       //   avatar: "https://example.com/avatar.jpg",
-    //       // },
-    //       // content: "Follow-up appointment for routine checkup.",
-    //     },
-    //   },
-    // ],
+    events,
     plugins: [interactionPlugin, dayGridPlugin, timeGridPlugin, listPlugin],
     initialView: "dayGridMonth",
     headerToolbar: {
@@ -171,11 +141,10 @@ const Calendar = (props) => {
     },
 
     eventClassNames({ event: calendarEvent }) {
-      const color = typeOptions.find(
-        (option) => option.value === calendarEvent._def.extendedProps.type,
-      )?.color;
-
-      return clsx("bg-this", setThisClass(color));
+      // const color = typeOptions.find(
+      //   (option) => option.value === calendarEvent._def.extendedProps.type,
+      // )?.color;
+      // return clsx("bg-this", setThisClass(color));
     },
     eventClick({ event: clickedEvent, jsEvent }) {
       jsEvent.preventDefault();
@@ -189,11 +158,11 @@ const Calendar = (props) => {
         extendedProps: clickedEvent._def.extendedProps,
       });
 
-      handleAddEventToggle();
-      if (clickedEvent.url) {
-        // Open the URL in a new tab
-        window.open(clickedEvent.url, "_blank");
-      }
+      // handleAddEventToggle();
+      // if (clickedEvent.url) {
+      //   // Open the URL in a new tab
+      //   window.open(clickedEvent.url, "_blank");
+      // }
     },
 
     dateClick(info) {
@@ -207,7 +176,7 @@ const Calendar = (props) => {
       const ev = { ...blankEvent };
       ev.start = start;
       ev.end = end;
-      ev.allDay = false;
+      // ev.allDay = false;
 
       selectEvent(ev);
       handleAddEventToggle();
@@ -240,7 +209,7 @@ const Calendar = (props) => {
       info.event.setEnd(end);
 
       addEvent({
-        allDay: info.event.allDay,
+        // allDay: info.event.allDay,
         title: info.event.title,
         start: info.event.start,
         end: info.event.end,
@@ -252,8 +221,14 @@ const Calendar = (props) => {
     eventDidMount: (eventInfo) =>
       renderEventDidMount(eventInfo, selectedEventViews),
     eventResize({ event: resizedEvent }) {
-      updateEvent(resizedEvent);
-      filterEvents();
+      console.log("resizedEvent");
+      console.log({
+        end: resizedEvent._instance.range.end,
+        start: resizedEvent._instance.range.start,
+      });
+
+      // updateEvent(resizedEvent);
+      // filterEvents();
     },
     ref: calendarRef,
     direction,

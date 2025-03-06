@@ -19,7 +19,11 @@ import { useIsomorphicEffect } from "hooks";
 import { useLocaleContext } from "app/contexts/locale/context";
 import dayjs from "dayjs";
 import "dayjs/locale/ar"; // Import Arabic locale
-import { minuteIncrement, typeOptions } from "constants/calendar.constant";
+import {
+  blankEvent,
+  minuteIncrement,
+  typeOptions,
+} from "constants/calendar.constant";
 import { adjustFlatpickrMinutes } from "utils/adjustFlatpickrMinutes";
 
 const SidebarLeft = (props) => {
@@ -56,12 +60,10 @@ const SidebarLeft = (props) => {
         const value = eventEl.dataset.value;
 
         const newEvent = {
+          ...blankEvent,
           title: label,
-          allDay: false,
-          extendedProps: {
-            type: value,
-            status: "confirmed",
-          },
+          // allDay: false,
+          extendedProps: { ...blankEvent.extendedProps, type: value },
         };
 
         console.log("eventEl ", newEvent);

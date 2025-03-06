@@ -17,6 +17,7 @@ import { Fragment } from "react";
 import { Button } from "components/ui";
 import { useBreakpointsContext } from "app/contexts/breakpoint/context";
 import { useDisclosure, useDidUpdate } from "hooks";
+import { clsx } from "clsx";
 
 // ----------------------------------------------------------------------
 
@@ -26,6 +27,7 @@ export function ContextualHelp(props) {
     title,
     content,
     anchor = { to: "bottom start", gap: 8 },
+    className,
   } = props;
 
   const { smAndDown, name } = useBreakpointsContext();
@@ -101,12 +103,13 @@ export function ContextualHelp(props) {
       </Transition>
     </>
   ) : (
-    <Popover className="relative">
+    <Popover className={clsx(className)}>
+      {/* "relative", */}
       <PopoverButton
         as={Button}
         variant="flat"
         isIcon
-        className="contextual-trigger pointer-events-auto size-6 rounded-full"
+        className={"contextual-trigger pointer-events-auto size-6 rounded-full"}
       >
         <Icon className="contextual-trigger-icon size-4.5" />
       </PopoverButton>
@@ -139,4 +142,5 @@ ContextualHelp.propTypes = {
   title: PropTypes.string,
   content: PropTypes.node,
   anchor: PropTypes.object,
+  className: PropTypes.string,
 };

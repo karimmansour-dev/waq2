@@ -6,7 +6,7 @@ import TextareaAutosize from "react-textarea-autosize";
 import { toast } from "sonner";
 
 // Local Imports
-import { schema } from "./schema";
+import getSchema from "./schema";
 import {
   Dialog,
   DialogPanel,
@@ -45,6 +45,7 @@ import {
   statusOptions,
   dayPartsOptions,
   typeOptions,
+  isFlexibleSchedule as initialIsFlexibleSchedule,
 } from "constants/calendar.constant";
 import { calculateStartAndEndTimes } from "utils/calculateStartAndEndTimes";
 import { adjustFlatpickrMinutes } from "utils/adjustFlatpickrMinutes";
@@ -125,8 +126,6 @@ const AddEventSidebarForm = ({ close }) => {
   const { selectedEvent, addEvent, updateEvent, filterEvents, deleteEvent } =
     useCalendarStore();
 
-  const { extendedProps, ...rest } = selectedEvent || {};
-
   //Confirm Modal
   const [isOpen, { open, close: Mclose }] = useDisclosure();
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -134,6 +133,9 @@ const AddEventSidebarForm = ({ close }) => {
   const [error, setError] = useState(false);
   const state = error ? "error" : success ? "success" : "pending";
   const [pendingData, setPendingData] = useState(null);
+  const [isFlexibleSchedule, setIsFlexibleSchedule] = useState(
+    initialIsFlexibleSchedule,
+  );
 
   const messages = {
     pending: {
@@ -168,13 +170,12 @@ const AddEventSidebarForm = ({ close }) => {
     allowSaturday,
     allowSunday,
   );
+  const { extendedProps, ...rest } = selectedEvent || {};
 
-  const initialState = {
-    url: "",
+  const baseState = {
     title: "",
     start,
-    end,
-    allDay: false,
+    // allDay: isFlexibleSchedule,
     doctor: null,
     // {
     //   uid: "1",
@@ -187,15 +188,34 @@ const AddEventSidebarForm = ({ close }) => {
     //   name: "John Doe",
     //   avatar: null,
     // },
-    timeSlot: "2025-03-05T17:00:00.000Z",
-    oldOrder: 20,
-    order: 22,
-    dayPart: "afternoon",
     status: extendedProps?.status || "confirmed",
     type: extendedProps?.type || "control",
     content: new Delta(),
-    ...rest,
+
+    dayPart: "morning",
+    oldOrder: 2,
+    order: 3,
+    end,
+    timeSlot: null, //"2025-03-06T14:30:00",
   };
+
+  // const fixedState = {
+  //   ...baseState,
+  //   end,
+  //   timeSlot: null, //"2025-03-06T14:30:00",
+  //   //...rest,
+  // };
+
+  // const flexibleState = {
+  //   ...baseState,
+  //   dayPart: "morning",
+  //   oldOrder: 20,
+  //   order: 22,
+  //   //...rest,
+  // };
+
+  const initialState = baseState // isFlexibleSchedule ? flexibleState : fixedState;
+
   const {
     register,
     handleSubmit,
@@ -211,15 +231,10 @@ const AddEventSidebarForm = ({ close }) => {
     // resolver: yupResolver(schema),
     defaultValues: initialState,
     mode: "onChange", //onTouched
+    context: isFlexibleSchedule,
     resolver: (values, context, options) => {
-      console.log("values: ", values);
-
-      // console.log("allDay");
-      // console.log(values.allDay);
-
-      // you can return the schema based on context.
-      // for my use case, I can depend on formValues
-      // const isSomeCondition = values.someValue === someValue;
+      // Determine the schema based on `isFlexibleSchedule`
+      const schema = getSchema(context); //isFlexibleSchedule
       const createResolver = yupResolver(schema);
       return createResolver(values, context, options);
     },
@@ -249,12 +264,12 @@ const AddEventSidebarForm = ({ close }) => {
     close();
   };
 
-  useEffect(() => {
-    const { unsubscribe } = watch((value) => {
-      console.log("watch: ", value);
-    });
-    return () => unsubscribe();
-  }, [watch]);
+  // useEffect(() => {
+  //   const { unsubscribe } = watch((value) => {
+  //     console.log("watch: ", value);
+  //   });
+  //   return () => unsubscribe();
+  // }, [watch]);
 
   const handleDeleteButtonClick = (id) => {
     setPendingData(id);
@@ -310,7 +325,7 @@ const AddEventSidebarForm = ({ close }) => {
       <form
         onSubmit={handleSubmit(onSubmit)}
         autoComplete="off"
-        className="flex grow flex-col gap-y-3"
+        className="flex grow flex-col gap-y-3 px-5"
       >
         <div className="flex gap-3">
           <div className="pt-1">
@@ -481,7 +496,7 @@ const AddEventSidebarForm = ({ close }) => {
                     placeholder="Choose start date..."
                     name={name}
                     value={new Date(value)}
-                    onChange={(_, dateStr) => onChange(dateStr)}
+                    onChange={(_, dateStr) => onChange(_[0])}
                     // options={{
                     //   dateFormat: "Y-m-d",
                     // }}
@@ -494,34 +509,51 @@ const AddEventSidebarForm = ({ close }) => {
             </div>
 
             {/* End Date */}
-            <div className="flex flex-col gap-y-3">
-              <Controller
-                render={({ field: { onChange, value, name } }) => (
-                  <DatePicker
-                    label="end date:"
-                    placeholder="Choose end date..."
-                    name={name}
-                    value={new Date(value)}
-                    onChange={(_, dateStr, instance) => {
-                      // adjustFlatpickrMinutes(_, dateStr, instance);
-                      onChange(dateStr);
-                    }}
-                    options={{
-                      dateFormat: "Y-m-d H:i",
-                      enableTime: true,
-                      // noCalendar: true,
-                      minuteIncrement,
-                    }}
-                  />
-                )}
-                control={control}
-                name="end"
-              />
+            {!isFlexibleSchedule && (
+              <div className="flex flex-col gap-y-3">
+                <Controller
+                  render={({ field: { onChange, value, name } }) => (
+                    <DatePicker
+                      label="end date:"
+                      placeholder="Choose end date..."
+                      name={name}
+                      value={new Date(value)}
+                      onChange={(_, dateStr, instance) => {
+                        console.log(getValues("start"));
+                        const { start, end } = calculateStartAndEndTimes(
+                          getValues("start"),
+                          minuteIncrement,
+                        );
 
-              <InputErrorMsg when={errors?.end?.message}>
-                {errors?.end?.message}
-              </InputErrorMsg>
-            </div>
+                        console.log(start);
+                        console.log(end);
+
+                        const adjustedDate = adjustFlatpickrMinutes(
+                          _,
+                          end,
+                          instance,
+                        );
+                        console.log("adjustedDate");
+                        console.log(adjustedDate);
+                        onChange(adjustedDate);
+                      }}
+                      options={{
+                        dateFormat: "H:i",
+                        enableTime: true,
+                        noCalendar: true,
+                        minuteIncrement,
+                      }}
+                    />
+                  )}
+                  control={control}
+                  name="end"
+                />
+
+                <InputErrorMsg when={errors?.end?.message}>
+                  {errors?.end?.message}
+                </InputErrorMsg>
+              </div>
+            )}
           </div>
         </div>
 
@@ -531,29 +563,28 @@ const AddEventSidebarForm = ({ close }) => {
             <LinkIcon className="size-6" />
           </div>
           <div className="flex-1">
-            <Controller
-              control={control}
-              error={errors?.allDay?.message}
-              name="allDay"
-              render={({ field }) => (
-                <Switch
-                  classNames={{ label: "flex flex-col" }}
-                  {...field}
-                  label="All Day"
-                  error={errors?.allDay?.message}
-                />
-              )}
+            <Switch
+              name={"isFlexibleSchedule"}
+              value={isFlexibleSchedule}
+              defaultChecked={isFlexibleSchedule}
+              onChange={(e) => {
+                setIsFlexibleSchedule(e.target.checked);
+              }}
+              classNames={{ label: "flex flex-col" }}
+              label="Flexible Schedule"
             />
           </div>
         </div>
 
         {/* timeSlot */}
-        {!watch("allDay") && (
+        {!isFlexibleSchedule && (
           <div className="mt-5 flex gap-3">
             <div className="pt-0.5">
               <LinkIcon className="size-6" />
             </div>
             <div className="flex-1">
+              <label>Select time :</label>
+
               <Controller
                 control={control}
                 name="timeSlot"
@@ -567,12 +598,15 @@ const AddEventSidebarForm = ({ close }) => {
                   />
                 )}
               />
+              <InputErrorMsg when={errors?.timeSlot?.message}>
+                {errors?.timeSlot?.message}
+              </InputErrorMsg>
             </div>
           </div>
         )}
 
         {/* day Part and order */}
-        {watch("allDay") && (
+        {isFlexibleSchedule && (
           <>
             <div className="mt-5 flex gap-3">
               <div className="pt-0.5">
@@ -594,7 +628,7 @@ const AddEventSidebarForm = ({ close }) => {
                 />
 
                 <InputErrorMsg when={errors?.dayPart?.message}>
-                  {errors?.end?.message}
+                  {errors?.dayPart?.message}
                 </InputErrorMsg>
               </div>
             </div>
@@ -628,13 +662,14 @@ const AddEventSidebarForm = ({ close }) => {
                         color="primary"
                         className="ltr:rounded-l-none rtl:rounded-r-none"
                       >
-                        {getValues("order")}
+                        {getValues("oldOrder")}
                       </Tag>
                     </div>
 
                     <div className="flex flex-col">
                       <Input
-                        className="w-full"
+                        className="w-20"
+                        disabled
                         type="number"
                         {...register("order", { valueAsNumber: true })}
                         error={errors?.order?.message}
@@ -683,7 +718,7 @@ const AddEventSidebarForm = ({ close }) => {
 
         {/* Submit Button */}
         <div className="mt-6 flex justify-between">
-          {initialState?.id && (
+          {selectedEvent && (
             <Button
               onClick={() => handleDeleteButtonClick(initialState.id)}
               color="error"
@@ -704,7 +739,7 @@ const AddEventSidebarForm = ({ close }) => {
               className="min-w-[8rem]"
               disabled={!isValid}
             >
-              {initialState?.id ? "Update Evant" : "add"}
+              {selectedEvent ? "Update Evant" : "add"}
             </Button>
           </div>
         </div>

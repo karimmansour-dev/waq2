@@ -1,152 +1,238 @@
+/* eslint-disable no-unused-vars */
+// Import Dependencies
 import { statusOptions, typeOptions } from "constants/calendar.constant";
 import dayjs from "dayjs";
+import { colorFromText } from "utils/colorFromText";
 
-/**
- * Creates a container for event details.
- * @returns {HTMLDivElement} - The details container element.
- */
-function createDetailsContainer() {
-  const detailsContainer = document.createElement("div");
-  detailsContainer.classList.add("flex", "flex-col", "gap-1", "text-sm");
-  return detailsContainer;
-}
-
-/**
- * Creates an element for the event title.
- * @param {string} title - The event title.
- * @returns {HTMLDivElement} - The title element.
- */
-function createTitleElement(title) {
-  const titleEl = document.createElement("div");
-  titleEl.innerText = title;
-  titleEl.classList.add("font-medium");
-  return titleEl;
-}
-
-/**
- * Creates an element for the event time range.
- * @param {string} startTime - The formatted start time.
- * @param {string} endTime - The formatted end time.
- * @returns {HTMLDivElement} - The time element.
- */
-function createTimeElement(startTime, endTime) {
-  const timeEl = document.createElement("div");
-  timeEl.innerText = `${startTime} - ${endTime}`;
-  timeEl.classList.add("text-xs", "text-gray-200");
-  return timeEl;
-}
-
-/**
- * Creates an element for the patient details.
- * @param {Object} patient - The patient object (contains name and avatar).
- * @returns {HTMLDivElement} - The patient container element.
- */
-function createPatientElement(patient) {
-  const patientContainer = document.createElement("div");
-  patientContainer.classList.add("flex", "items-center", "gap-2", "mt-1");
-
-  if (patient.avatar) {
-    const avatarEl = document.createElement("img");
-    avatarEl.src = patient.avatar;
-    avatarEl.alt = "Patient Avatar";
-    avatarEl.classList.add("h-6", "w-6", "rounded-full");
-    patientContainer.appendChild(avatarEl);
-  }
-
-  const patientNameEl = document.createElement("div");
-  patientNameEl.innerText = patient.name;
-  patientNameEl.classList.add("text-xs", "text-gray-200");
-  patientContainer.appendChild(patientNameEl);
-
-  return patientContainer;
-}
-
-/**
- * Creates an element for the event type or status.
- * @param {string} text - The type or status text.
- * @param {string} color - The background color for the element.
- * @returns {HTMLDivElement} - The type or status element.
- */
-function createTypeStatusElement(text, color) {
-  const element = document.createElement("div");
-  element.innerText = text;
-  element.classList.add(
-    "px-2",
-    "py-1",
-    "rounded",
-    "bg-opacity-50",
-    "text-xs",
-    "bg-this",
-    `this:${color}`,
-  );
+// Helper Functions
+function createElement(tag, className = "", textContent = "") {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (textContent) element.textContent = textContent;
   return element;
 }
 
-/**
- * Renders event details when the event is mounted.
- * @param {Object} eventInfo - The event information object.
- * @param {Array} selectedEventViews - The list of event views to display.
- */
-function renderEventDidMount(eventInfo, selectedEventViews) {
-  const { event } = eventInfo;
+function createAvatar({ src, name, size = 12, initialColor = "neutral" }) {
+  const avatar = createElement("div", "avatar relative inline-flex shrink-0");
+  avatar.style.height = `${size / 4}rem`;
+  avatar.style.width = `${size / 4}rem`;
 
-  // Create a container for event details
-  const detailsContainer = createDetailsContainer();
+  if (src) {
+    const img = createElement(
+      "img",
+      "avatar-image avatar-display relative h-full w-full rounded-full",
+    );
+    img.src = src;
+    img.alt = name || "avatar";
+    avatar.appendChild(img);
+  } else if (name) {
+    const initialContainer = createElement(
+      "div",
+      "avatar-initial avatar-display flex h-full w-full select-none items-center justify-center font-medium uppercase",
+    );
+    const color = initialColor === "auto" ? colorFromText(name) : initialColor;
 
-  // Add title (if "title" is in selectedEventViews)
-  if (selectedEventViews.includes("title")) {
-    detailsContainer.appendChild(createTitleElement(event.title));
+    initialContainer.classList.add(`this:${color}`);
+    initialContainer.classList.add(`bg-this-darker`);
+    initialContainer.textContent = name
+      .match(/\b(\w)/g)
+      .slice(0, 2)
+      .join("");
+    avatar.appendChild(initialContainer);
   }
 
-  // Add start and end time (if "start" or "end" is in selectedEventViews)
-  if (
-    selectedEventViews.includes("start") ||
-    selectedEventViews.includes("end")
-  ) {
-    const startTime = event.start ? dayjs(event.start).format("h:mm A") : "N/A";
-    const endTime = event.end ? dayjs(event.end).format("h:mm A") : "N/A";
-    detailsContainer.appendChild(createTimeElement(startTime, endTime));
+  return avatar;
+}
+
+function createButton({
+  color,
+  variant,
+  isIcon,
+  onClick,
+  children,
+  disabled,
+  isGlow,
+  className,
+  tooltipContent,
+  tooltipVariant,
+}) {
+  const button = createElement("button");
+  button.addEventListener("click", onClick);
+
+  if (isIcon) {
+    button.classList.add("shrink-0", "p-0");
   }
 
-  // Add patient name and avatar (if "patient" is in selectedEventViews)
-  if (selectedEventViews.includes("patient") && event.extendedProps.patient) {
-    detailsContainer.appendChild(
-      createPatientElement(event.extendedProps.patient),
+  // if (color && variant) {
+  //   button.classList.add(`bg-${color}`, `text-${color}-contrast`);
+  // }
+
+  if (isGlow) {
+    button.classList.add("shadow-lg", `shadow-${color}/50`);
+  }
+
+  if (disabled) {
+    button.disabled = true;
+    button.setAttribute("data-disabled", "true");
+  }
+
+  if (className) {
+    button.classList.add(...className.split(" "));
+  }
+
+  // Add tooltip attributes if provided
+  if (tooltipContent) {
+    button.setAttribute("data-tooltip", "");
+    button.setAttribute("data-tooltip-content", tooltipContent);
+  }
+
+  if (tooltipVariant) {
+    button.setAttribute("data-tooltip-variant", tooltipVariant);
+  }
+
+  if (children) {
+    if (Array.isArray(children)) {
+      children.forEach((child) => button.appendChild(child));
+    } else {
+      button.appendChild(children);
+    }
+  }
+
+  return button;
+}
+
+function createCard({ skin = "none", className = "", children, typeColor }) {
+  const card = createElement(  
+    "div",
+    `relative !p-1 this:${typeColor} bg-this-lighter rounded-lg w-full h-full flex items-center justify-between content-center flex-wrap overflow-hidden`, ///
+  );
+
+  if (!skin === "bordered") {
+    card.classList.add(
+      "border",
+      "border-gray-200",
+      "dark:border-dark-600",
+      "print:border-0",
+    );
+  } else if (skin === "shadow") {
+    card.classList.add(
+      "shadow-soft",
+      "dark:bg-dark-700",
+      "dark:shadow-none",
+      "print:shadow-none",
     );
   }
 
-  // Add type and status (if "type" or "status" is in selectedEventViews)
-  if (
-    selectedEventViews.includes("type") ||
-    selectedEventViews.includes("status")
-  ) {
-    const { type, status } = event.extendedProps;
-
-    const typeColor = typeOptions.find(
-      (option) => option.value === type,
-    )?.color;
-    const statusColor = statusOptions.find(
-      (option) => option.value === status,
-    )?.color;
-
-    const typeStatusContainer = document.createElement("div");
-    typeStatusContainer.classList.add("flex", "flex-col", "gap-2", "mt-1");
-
-    if (selectedEventViews.includes("type")) {
-      typeStatusContainer.appendChild(createTypeStatusElement(type, typeColor));
-    }
-
-    if (selectedEventViews.includes("status")) {
-      typeStatusContainer.appendChild(
-        createTypeStatusElement(status, statusColor),
-      );
-    }
-
-    detailsContainer.appendChild(typeStatusContainer);
+  if (className) {
+    card.classList.add(...className.split(" "));
   }
 
-  // Append the container to the event element
-  eventInfo.el.appendChild(detailsContainer);
+  if (children) {
+    if (Array.isArray(children)) {
+      children.forEach((child) => card.appendChild(child));
+    } else {
+      card.appendChild(children);
+    }
+  }
+
+  return card;
 }
 
-export default renderEventDidMount;
+function createEventCard(eventInfo) {
+  const { event } = eventInfo;
+  const {
+    title,
+    start,
+    end,
+    extendedProps: { type, status, patient },
+  } = event;
+
+  // Format start time and duration
+  const formattedStart = dayjs(start).format("ddd, D MMMM HH:mm");
+  const durationInMinutes = dayjs(end).diff(dayjs(start), "minute");
+
+  const typeColor = typeOptions.find((option) => option.value === type)?.color;
+  // const statusColor = statusOptions.find(
+  //   (option) => option.value === status,
+  // )?.color;
+
+  // Create card container
+  const card = createCard({ skin: "shadow", typeColor, className: "p-4" }); ///space-y-4
+
+  // Patient Info Section
+  const patientInfo = createElement(
+    "div",
+    "flex items-center justify-center content-center flex-wrap gap-2",
+  );
+  const avatar = createAvatar({
+    // src: patient.avatar,
+    name: patient.name,
+    size: 10,
+    initialColor: "auto",
+  });
+  const patientDetails = createElement("div");
+  const patientName = createElement(
+    "h3",
+    "truncate font-medium text-gray-800",
+    patient.name,
+  );
+  const patientUid = createElement(
+    "p",
+    "mt-0.5 text-xs text-gray-400",
+    patient.uid,
+  );
+
+  patientDetails.appendChild(patientName);
+  patientDetails.appendChild(patientUid);
+  patientInfo.appendChild(avatar);
+  patientInfo.appendChild(patientDetails);
+
+  // Time and Duration Section
+  const timeContainer = createElement(
+    "div",
+    "flex flex-col items-start justify-center whitespace-normal", ///
+  );
+  const startTime = createElement("p", "", formattedStart);
+  const duration = createElement(
+    "p",
+    "text-md font-medium text-gray-800",
+    `${durationInMinutes || 0} mins`,
+  );
+
+  timeContainer.appendChild(startTime);
+  timeContainer.appendChild(duration);
+
+  // Buttons Section
+  const buttonsContainer = createElement("div", "flex gap-2");
+  //const leftButtons = createElement("div", "flex gap-2");
+
+  const confirmButton = createButton({
+    children: createElement("span", "", "✔️"),
+    tooltipContent: type,
+    tooltipVariant: "warning",
+  });
+
+  const cancelButton = createButton({
+    children: createElement("span", "", "❌"),
+    tooltipContent: status,
+    tooltipVariant: "info",
+  });
+
+  buttonsContainer.appendChild(confirmButton);
+  buttonsContainer.appendChild(cancelButton);
+  //buttonsContainer.appendChild(leftButtons);
+
+  // Assemble Card
+  card.appendChild(patientInfo);
+  card.appendChild(timeContainer);
+  card.appendChild(buttonsContainer);
+
+  return card;
+}
+
+// Export the EventCard function
+export default function renderEventDidMount(eventInfo) {
+  //eventInfo.el.innerHTML = "";
+  const card = createEventCard(eventInfo);
+  eventInfo.el.appendChild(card);
+}

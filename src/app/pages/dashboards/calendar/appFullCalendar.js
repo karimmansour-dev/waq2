@@ -457,42 +457,47 @@ const AppFullCalendar = styled("div")(() => {
         },
       },
 
-      // Daygrid
-      "& .fc-scrollgrid-section-liquid > td": {
-        borderBottom: 0,
-      },
-      "& .fc-daygrid-event-harness": {
-        "& .fc-event": {
-          padding: "0.25rem 0.75rem",
-          borderRadius: 4,
+      //Daygrid
+      "& .fc-timegrid-event-harness": {
+        "& .fc-v-event": {
+          backgroundColor: "transparent",
+          border: "none",
         },
-        "&:not(:last-of-type) .fc-event": {
-          marginBottom: "0.625rem !important",
-        },
+        // "& .fc-scrollgrid-section-liquid > td": {
+        //   // borderBottom: 0,
+        // },
+        // "& .fc-daygrid-event-harness": {
+        // "& .fc-event": {
+        //   padding: "0.25rem 0.75rem",
+        //   borderRadius: 4,
+        // },
+        // "&:not(:last-of-type) .fc-event": {
+        //   marginBottom: "0.625rem !important",
+        // },
       },
-      "& .fc-daygrid-day-bottom": {
-        marginTop: "0.625rem",
-      },
-      "& .fc-daygrid-day": {
-        padding: "8px",
-        "& .fc-daygrid-day-top": {
-          flexDirection: "row",
-        },
-      },
-      "& .fc-scrollgrid": {
-        borderColor: primary[500],
-        borderInline: 0,
-      },
-      "& .fc-daygrid-day-events": {
-        marginTop: "0.625rem",
-        minHeight: "5rem !important",
-      },
-      "& .fc-day-other .fc-daygrid-day-top": {
-        opacity: 1,
-        "& .fc-daygrid-day-number": {
-          color: `${primary[300]} !important`,
-        },
-      },
+      // "& .fc-daygrid-day-bottom": {
+      //   marginTop: "0.625rem",
+      // },
+      // "& .fc-daygrid-day": {
+      //   padding: "8px",
+      //   "& .fc-daygrid-day-top": {
+      //     flexDirection: "row",
+      //   },
+      // },
+      // "& .fc-scrollgrid": {
+      //   borderColor: primary[500],
+      //   borderInline: 0,
+      // },
+      // "& .fc-daygrid-day-events": {
+      //   marginTop: "0.625rem",
+      //   minHeight: "5rem !important",
+      // },
+      // "& .fc-day-other .fc-daygrid-day-top": {
+      //   opacity: 1,
+      //   "& .fc-daygrid-day-number": {
+      //     color: `${primary[300]} !important`,
+      //   },
+      // },
 
       // All Views Event
       "& .fc-daygrid-day-number, & .fc-timegrid-slot-label-cushion, & .fc-list-event-time":
@@ -580,7 +585,9 @@ const AppFullCalendar = styled("div")(() => {
         ".fc-timegrid-col-events": {
           margin: 0,
           "& .fc-event-main": {
-            padding: "0.5rem",
+            // padding: "0.5rem",
+            // position: "static",
+            display: "none",
           },
         },
       },
@@ -600,17 +607,36 @@ const AppFullCalendar = styled("div")(() => {
         },
         ".fc-list-event": {
           cursor: "pointer",
-          "&:hover": {
-            "& td": {
-              // backgroundColor: `rgba(${primary[900]}, 0.04)`,
-            },
-          },
-          "& td": {
-            borderColor: primary[400],
-          },
+          position: "relative",
+          // borderRadius: "0.5rem",
+          // width: "100%",
+          // height: "100%",
+          // display: "flex",
+          // alignItems: "center",
+          // justifyContent: "space-between",
+          // alignContent: "center",
+          // flexWrap: "wrap",
+          // overflow: "auto",
+          // backgroundColor: "red",
+          // boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+
+          // @media (prefers-color-scheme: dark) {
+          //   background-color: #2c3e50;
+          //   box-shadow: none;
+          // }
+
+          // "&:hover": {
+          //   "& td": {
+          //     // backgroundColor: `rgba(${primary[900]}, 0.04)`,
+          //   },
+          //},
+          // "& td": {
+          //   borderColor: primary[400],
+          // },
         },
         "& .fc-list-event-graphic": {
-          padding: "0.5rem",
+          // padding: "0.5rem",
+          display: "none",
         },
         "& .fc-list-day": {
           backgroundColor: primary[200],
@@ -625,14 +651,16 @@ const AppFullCalendar = styled("div")(() => {
           },
         },
         "& .fc-list-event-title": {
-          ...typography.body1,
-          color: `${primary[500]} !important`,
-          padding: "0.5rem 1rem 0.5rem 0.5rem",
+          // ...typography.body1,
+          // color: `${primary[500]} !important`,
+          padding: "0px",
+          //display: "none",
         },
         "& .fc-list-event-time": {
-          ...typography.body1,
-          color: `${primary[900]} !important`,
-          padding: "0.5rem 1rem",
+          // ...typography.body1,
+          // color: `${primary[900]} !important`,
+          // padding: "0.5rem 1rem",
+          display: "none",
         },
         ".fc-list-table tbody > tr:first-child th": {
           borderTop: `2px solid ${primary[500]}`,

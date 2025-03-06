@@ -131,6 +131,8 @@ const generateTimeSlots = (
 
 export default generateTimeSlots
 // // Example usage
+// const date = new Date();
+// const nextDay = new Date(date.getTime() + 24 * 60 * 60 * 1000);
 // const date = new Date(); // Use current date
 // const openingTime = "09:00";
 // const closingTime = "17:00";

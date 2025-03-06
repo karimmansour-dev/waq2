@@ -80,11 +80,15 @@ const ContextualHelper = (eventInfo, selectedEventViews) => {
     <ContextualHelp
       title="What is a segment?"
       anchor={{ to: "bottom end", gap: 12 }}
-      className={clsx(setThisClass(typeColor), {
-        "opacity-50": isGone,
-        "border-dashed": isMirror,
-        "ring-2 ring-primary-500": isSelected,
-      })}
+      className={clsx(
+        "mmmmmmmmmmmmmmmmmmmmmmm absolute bottom-1 right-1 z-50",
+        setThisClass(typeColor),
+        {
+          "opacity-50": isGone,
+          "border-dashed": isMirror,
+          "ring-2 ring-primary-500": isSelected,
+        },
+      )}
       content={
         <>
           <p>
@@ -235,4 +239,3 @@ ContextualHelper.propTypes = {
 };
 
 export default ContextualHelper;
-

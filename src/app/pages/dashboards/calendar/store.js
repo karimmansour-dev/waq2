@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { create } from "zustand";
 import { events } from "./events";
 import {
@@ -6,9 +7,59 @@ import {
   selectedTypes,
 } from "constants/calendar.constant";
 
+const date = new Date();
+const nextDay = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+const demo = [
+  {
+    id: "11",
+    title: "Appointment",
+    start: date,
+    end: date,
+    allDay: false,
+
+    extendedProps: {
+      type: "control",
+      status: "confirmed",
+      doctor: {
+        uid: "1",
+        name: "Dr. John Doe",
+        avatar: "/images/200x200.png",
+      },
+      patient: {
+        uid: "2",
+        name: "Jane Smith 111",
+        avatar: "/images/200x200.png",
+      },
+      content: "Follow-up appointment for routine checkup.",
+    },
+  },
+  // {
+  //   id: "12",
+  //   title: "Appointment",
+  //   start: nextDay,
+  //   end: nextDay,
+  //   allDay: false,
+
+  //   extendedProps: {
+  //     type: "emergency",
+  //     status: "canceled",
+  //     doctor: {
+  //       uid: "1",
+  //       name: "Dr. John Doe",
+  //       avatar: "/images/200x200.png",
+  //     },
+  //     patient: {
+  //       uid: "2",
+  //       name: "Jane Smith 222",
+  //       avatar: "/images/200x200.png",
+  //     },
+  //     content: "Follow-up appointment for routine checkup.",
+  //   },
+  // },
+];
 const useCalendarStore = create((set, get) => ({
-  events: events,
-  filteredEvents: events,
+  events: demo,
+  filteredEvents: demo,
   selectedEvent: null,
   selectedEventViews,
   selectedTypes,

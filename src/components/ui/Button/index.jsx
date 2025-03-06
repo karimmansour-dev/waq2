@@ -31,7 +31,7 @@ const Button = forwardRef((props, ref) => {
   const {
     component,
     className,
-    children,
+    children, 
     color,
     isIcon,
     variant = "filled",

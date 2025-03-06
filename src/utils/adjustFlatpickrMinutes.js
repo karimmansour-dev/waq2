@@ -4,8 +4,13 @@
  * @param {Date[]} _selectedDates - The selected dates from flatpickr.
  * @param {string} dateString - The selected date as a string.
  * @param {Object} flatpickrInstance - The flatpickr instance.
+ * @returns {Date|undefined} The adjusted date or undefined if no adjustment is made.
  */
-export function adjustFlatpickrMinutes(_selectedDates, dateString, flatpickrInstance) {
+export function adjustFlatpickrMinutes(
+  _selectedDates,
+  dateString,
+  flatpickrInstance,
+) {
   const minuteIncrement = flatpickrInstance.config.minuteIncrement;
 
   // Ensure minuteIncrement is valid
@@ -22,22 +27,14 @@ export function adjustFlatpickrMinutes(_selectedDates, dateString, flatpickrInst
     return;
   }
 
-  console.log("selectedMinutes:", selectedMinutes);
-  console.log("minuteIncrement:", minuteIncrement);
-
-  const remainder = selectedMinutes % minuteIncrement;
-  console.log("remainder:", remainder);
-
   // Do nothing if the selected minutes already align with the increment
-  if (remainder === 0) return;
+  if (selectedMinutes % minuteIncrement === 0) {
+    return new Date(flatpickrInstance.parseDate(dateString));
+  }
 
-  // Calculate the quotient for the nearest increment
+  // Calculate the nearest increment
+  const remainder = selectedMinutes % minuteIncrement;
   let quotient = Math.floor(selectedMinutes / minuteIncrement);
-  console.log("quotient:", quotient);
-
-  console.log("remainder / minuteIncrement:", remainder / minuteIncrement);
-  console.log("quotient * minuteIncrement:", quotient * minuteIncrement);
-  console.log("(quotient + 1) * minuteIncrement:", (quotient + 1) * minuteIncrement);
 
   // Round up to the nearest increment if the remainder is more than half of the increment
   if (remainder / minuteIncrement > 0.5) {
@@ -45,11 +42,20 @@ export function adjustFlatpickrMinutes(_selectedDates, dateString, flatpickrInst
   }
 
   // Update the minutes to the nearest increment
-  const adjustedMinutes = quotient * minuteIncrement;
-  flatpickrInstance.minuteElement.value = adjustedMinutes;
+  let adjustedMinutes = quotient * minuteIncrement;
+  //flatpickrInstance.minuteElement.value = adjustedMinutes;
+
+  // // Handle case where adjustedMinutes exceeds 59
+  // if (adjustedMinutes === 60) {
+  //   adjustedMinutes = 0; // Reset to 0 and increment the hour
+  // }
 
   // Set the date with the updated minutes
   const adjustedDate = new Date(flatpickrInstance.parseDate(dateString));
   adjustedDate.setMinutes(adjustedMinutes);
+
+  // Update the flatpickr instance with the adjusted date
   flatpickrInstance.setDate(adjustedDate);
+
+  return adjustedDate;
 }

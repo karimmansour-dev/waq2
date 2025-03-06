@@ -18,13 +18,6 @@ import AppFullCalendar from "./appFullCalendar";
 import SimpleBar from "simplebar-react";
 
 const CalendarWrapper = () => {
-  // const calendarsColor = {
-  //   consultation: "primary",
-  //   control: "secondary",
-  //   emergency: "warning",
-  //   other: "info",
-  // };
-
   // States
   const [calendarApi, setCalendarApi] = useState(null);
   const [addEventOpen, setAddEventOpen] = useState(false);
@@ -62,7 +55,7 @@ const CalendarWrapper = () => {
           setIsFullScreen={setIsFullScreen}
         />
 
-        <div className="mb-[200px] flex w-full flex-1 gap-x-10">
+        <div className="mb-[200px] flex w-full flex-1 gap-x-1">
           <SidebarLeft
             mdAbove={mdAndUp}
             calendarApi={calendarApi}
